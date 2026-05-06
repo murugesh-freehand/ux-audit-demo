@@ -21,10 +21,10 @@ const usd = (n: number) =>
 
 function KpiCard({ label, value, subLabel }: { label: string; value: string; subLabel: string }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-100 px-5 py-4">
-      <p className="text-xs text-gray-500 mb-2">{label}</p>
-      <p className="text-2xl font-semibold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-400 mt-1">{subLabel}</p>
+    <div className="bg-white rounded-lg border border-slate-200 px-5 py-4">
+      <p className="text-xs text-slate-500 mb-2">{label}</p>
+      <p className="text-2xl font-semibold text-slate-950">{value}</p>
+      <p className="text-xs text-slate-400 mt-1">{subLabel}</p>
     </div>
   );
 }
@@ -44,7 +44,7 @@ function MoreFilters({ f, onChange, onReset, count }: {
           <Filter size={13} />
           Filters
           {count > 0 && (
-            <span className="inline-flex items-center justify-center rounded-full bg-[#F06B00] text-white text-[10px] w-4 h-4 font-medium ml-0.5">
+            <span className="inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] w-4 h-4 font-medium ml-0.5">
               {count}
             </span>
           )}
@@ -52,8 +52,8 @@ function MoreFilters({ f, onChange, onReset, count }: {
       </PopoverTrigger>
       <PopoverContent className="w-56 p-4 space-y-4" align="start">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-800">More Filters</span>
-          {count > 0 && <button onClick={onReset} className="text-xs text-[#F06B00] hover:underline">Reset</button>}
+          <span className="text-sm font-medium text-slate-800">More Filters</span>
+          {count > 0 && <button onClick={onReset} className="text-xs text-primary hover:underline">Reset</button>}
         </div>
         {([
           { label: "Mode",    key: "mode",    opts: ["all:All Modes","LTL:LTL","FTL:FTL","ROAD:Road","AIR:Air"] },
@@ -62,11 +62,11 @@ function MoreFilters({ f, onChange, onReset, count }: {
           { label: "Service", key: "service", opts: ["all:All Services","standard:Standard","priority:Priority","express:Express"] },
         ] as const).map(({ label, key, opts }) => (
           <div key={key}>
-            <label className="text-xs font-medium text-gray-500 block mb-1">{label}</label>
+            <label className="text-xs font-medium text-slate-500 block mb-1">{label}</label>
             <select
               value={f[key]}
               onChange={(e) => set(key, e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none"
+              className="w-full text-sm border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-700 focus:outline-none"
             >
               {opts.map((o) => { const [v, l] = o.split(":"); return <option key={v} value={v}>{l}</option>; })}
             </select>
@@ -82,8 +82,8 @@ function MoreFilters({ f, onChange, onReset, count }: {
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-gray-100 rounded-lg shadow-sm px-3 py-2 text-xs">
-      <p className="text-gray-500 mb-1">{label}</p>
+    <div className="bg-white border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-xs">
+      <p className="text-slate-500 mb-1">{label}</p>
       {payload.map((p: any) => (
         <p key={p.name} style={{ color: p.color }} className="font-medium">
           {fmtLabel(p.name)}: {typeof p.value === "number" && Math.abs(p.value) > 100 ? usd(p.value) : `${p.value}%`}
@@ -108,7 +108,7 @@ export default function SpendDashboardPage() {
   if (!dashboard) {
     return (
       <div className="min-h-full flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Dashboard not found.</p>
+        <p className="text-slate-400 text-sm">Dashboard not found.</p>
       </div>
     );
   }
@@ -116,16 +116,16 @@ export default function SpendDashboardPage() {
   return (
     <div className="min-h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-          <Link to="/spend" className="hover:text-gray-600 transition-colors">Spend Analysis</Link>
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
+          <Link to="/spend" className="hover:text-slate-600 transition-colors">Spend Analysis</Link>
           <ChevronRight size={12} />
-          <span className="text-gray-600">{dashboard.name}</span>
+          <span className="text-slate-600">{dashboard.name}</span>
         </nav>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900">{dashboard.name}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{dashboard.description}</p>
+            <h1 className="text-slate-950">{dashboard.name}</h1>
+            <p className="text-sm text-slate-500 mt-0.5">{dashboard.description}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-1.5">
@@ -142,11 +142,11 @@ export default function SpendDashboardPage() {
         {/* Filters: 2 primary + More */}
         <div className="flex items-center gap-2 mt-4">
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-gray-400 font-medium">Period</label>
+            <label className="text-xs text-slate-400 font-medium">Period</label>
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
             >
               <option value="all">All Time</option>
               <option value="30d">Last 30 Days</option>
@@ -156,11 +156,11 @@ export default function SpendDashboardPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-gray-400 font-medium">Carrier</label>
+            <label className="text-xs text-slate-400 font-medium">Carrier</label>
             <select
               value={carrier}
               onChange={(e) => setCarrier(e.target.value)}
-              className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
             >
               <option value="all">All Carriers</option>
               <option value="AVRT">Averitt Express</option>
@@ -180,7 +180,7 @@ export default function SpendDashboardPage() {
           {(period !== "all" || carrier !== "all" || moreCount > 0) && (
             <button
               onClick={() => { setPeriod("all"); setCarrier("all"); setMoreF({ mode: "all", region: "all", bu: "all", service: "all" }); }}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 ml-1"
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 ml-1"
             >
               <X size={12} /> Clear all
             </button>
@@ -200,8 +200,8 @@ export default function SpendDashboardPage() {
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Spend by Charge Type — formatted labels */}
-          <div className="bg-white rounded-lg border border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Spend by Charge Type</h3>
+          <div className="bg-white rounded-lg border border-slate-200 px-5 py-4">
+            <h3 className="text-sm font-medium text-slate-700 mb-4">Spend by Charge Type</h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={spendByChargeType} layout="vertical" margin={{ left: 8, right: 16 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
@@ -235,8 +235,8 @@ export default function SpendDashboardPage() {
           </div>
 
           {/* Charge Composition donut */}
-          <div className="bg-white rounded-lg border border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Charge Composition</h3>
+          <div className="bg-white rounded-lg border border-slate-200 px-5 py-4">
+            <h3 className="text-sm font-medium text-slate-700 mb-4">Charge Composition</h3>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie
@@ -253,7 +253,7 @@ export default function SpendDashboardPage() {
                   ))}
                 </Pie>
                 <Legend
-                  formatter={(value) => <span className="text-xs text-gray-600">{value}</span>}
+                  formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
                   iconSize={10}
                   iconType="circle"
                 />
@@ -264,8 +264,8 @@ export default function SpendDashboardPage() {
         </div>
 
         {/* Charge Trend */}
-        <div className="bg-white rounded-lg border border-gray-100 px-5 py-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-4">Charge Trend — Last 6 Months</h3>
+        <div className="bg-white rounded-lg border border-slate-200 px-5 py-4">
+          <h3 className="text-sm font-medium text-slate-700 mb-4">Charge Trend — Last 6 Months</h3>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={chargeTrend} margin={{ left: 8, right: 8 }}>
               <defs>

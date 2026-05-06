@@ -91,14 +91,14 @@ function StepIcon({ state }: { state: StepState }) {
   }
   if (state === "active") {
     return (
-      <div className="w-5 h-5 rounded-full border-2 border-[#F06B00] flex items-center justify-center shrink-0 mt-0.5">
-        <div className="w-2 h-2 rounded-full bg-[#F06B00]" />
+      <div className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-2 h-2 rounded-full bg-primary" />
       </div>
     );
   }
   return (
-    <div className="w-5 h-5 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
-      <Lock size={9} className="text-gray-300" />
+    <div className="w-5 h-5 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 mt-0.5">
+      <Lock size={9} className="text-slate-300" />
     </div>
   );
 }
@@ -111,7 +111,7 @@ function ExceptionCodeBadge({ code }: { code: string }) {
     LANE_NOT_FOUND:     { label: "Lane Not Found",   cls: "bg-red-50 text-red-700 border-red-200" },
     DUPLICATE_CHARGE:   { label: "Duplicate Charge", cls: "bg-orange-50 text-orange-700 border-orange-200" },
   };
-  const { label, cls } = labels[code] ?? { label: code, cls: "bg-gray-50 text-gray-600 border-gray-200" };
+  const { label, cls } = labels[code] ?? { label: code, cls: "bg-slate-50 text-slate-600 border-slate-200" };
   return (
     <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", cls)}>
       {label}
@@ -126,10 +126,10 @@ function InvoiceStatusBadge({ status }: { status: string }) {
     REJECTED:   "bg-red-50 text-red-700 border-red-200",
     INCOMPLETE: "bg-amber-50 text-amber-700 border-amber-200",
     COMPLETED:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-    PENDING:    "bg-gray-50 text-gray-500 border-gray-200",
+    PENDING:    "bg-slate-50 text-slate-500 border-slate-200",
   };
   return (
-    <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium", map[status] ?? "bg-gray-100 text-gray-600 border-gray-200")}>
+    <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium", map[status] ?? "bg-slate-100 text-slate-600 border-slate-200")}>
       {status}
     </span>
   );
@@ -143,15 +143,15 @@ function formatDate(dateStr: string) {
 
 export default function HomePage() {
   return (
-    <div className="min-h-full bg-gray-50 flex flex-col">
+    <div className="min-h-full bg-slate-50 flex flex-col">
 
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 shrink-0">
-        <h1 className="text-gray-900 font-semibold">Good morning, CFO</h1>
+      <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
+        <h1 className="text-slate-950 font-semibold">Good morning, CFO</h1>
         {openExceptionCount > 0 && (
           <p className="text-sm mt-0.5">
-            <span className="text-gray-500">SLB — </span>
-            <Link to="/exceptions" className="text-[#F06B00] font-medium hover:underline">
+            <span className="text-slate-500">SLB — </span>
+            <Link to="/exceptions" className="text-primary font-medium hover:underline">
               {openExceptionCount} open exception{openExceptionCount !== 1 ? "s" : ""} need{openExceptionCount === 1 ? "s" : ""} your attention
             </Link>
           </p>
@@ -161,33 +161,33 @@ export default function HomePage() {
       <div className="flex-1 px-6 py-5 space-y-5">
 
         {/* Setup checklist ─────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200">
             <div>
-              <p className="text-sm font-semibold text-gray-900">Finish setting up</p>
-              <p className="text-xs text-gray-400 mt-0.5">Complete these steps to start auditing invoices</p>
+              <p className="text-sm font-semibold text-slate-950">Finish setting up</p>
+              <p className="text-xs text-slate-400 mt-0.5">Complete these steps to start auditing invoices</p>
             </div>
             <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-medium text-amber-700">
               {doneCount} of {setupSteps.length} done
             </span>
           </div>
-          <div className="h-1 bg-gray-100">
-            <div className="h-1 bg-[#F06B00] transition-all duration-500" style={{ width: `${progressPct}%` }} />
+          <div className="h-1 bg-slate-100">
+            <div className="h-1 bg-primary transition-all duration-500" style={{ width: `${progressPct}%` }} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
             {setupSteps.map((step, idx) => (
               <div
                 key={step.id}
                 className={cn(
                   "flex items-start gap-3 px-5 py-4",
-                  idx >= 2 && "border-t border-gray-50",
+                  idx >= 2 && "border-t border-slate-100",
                   step.state === "active" && "bg-amber-50/40"
                 )}
               >
                 <StepIcon state={step.state} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className={cn("text-sm font-medium leading-tight", step.state === "locked" ? "text-gray-400" : "text-gray-900")}>
+                    <p className={cn("text-sm font-medium leading-tight", step.state === "locked" ? "text-slate-400" : "text-slate-950")}>
                       {step.title}
                     </p>
                     {step.state === "done" && (
@@ -197,11 +197,11 @@ export default function HomePage() {
                       <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700">Up next</span>
                     )}
                   </div>
-                  <p className={cn("text-xs mt-1 leading-relaxed", step.state === "locked" ? "text-gray-300" : "text-gray-500")}>
+                  <p className={cn("text-xs mt-1 leading-relaxed", step.state === "locked" ? "text-slate-300" : "text-slate-500")}>
                     {step.desc}
                   </p>
                   {step.ctaTo && (
-                    <Link to={step.ctaTo} className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-[#F06B00] hover:underline">
+                    <Link to={step.ctaTo} className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-primary hover:underline">
                       {step.ctaLabel} <ArrowRight size={11} />
                     </Link>
                   )}
@@ -215,40 +215,40 @@ export default function HomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
           <Link to="/invoices"
-            className="bg-white rounded-xl border border-gray-100 border-l-2 border-l-emerald-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-xl border border-slate-200 border-l-2 border-l-emerald-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
-            <p className="text-xs text-gray-400 mb-1.5">Approved automatically</p>
+            <p className="text-xs text-slate-500 mb-1.5">Approved automatically</p>
             <p className="text-2xl font-semibold text-emerald-600">{autoCleared}</p>
-            <p className="text-[11px] text-gray-400 mt-1.5">no review needed · {clearRate}% of invoices</p>
+            <p className="text-[11px] text-slate-400 mt-1.5">no review needed · {clearRate}% of invoices</p>
           </Link>
 
           <Link to="/invoices"
-            className="bg-white rounded-xl border border-gray-100 border-l-2 border-l-amber-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-xl border border-slate-200 border-l-2 border-l-amber-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
-            <p className="text-xs text-gray-400 mb-1.5">Flagged for review</p>
+            <p className="text-xs text-slate-500 mb-1.5">Flagged for review</p>
             <p className="text-2xl font-semibold text-amber-600">{flaggedForReview}</p>
-            <p className="text-[11px] text-gray-400 mt-1.5">of {totalInvoices} invoices this month</p>
+            <p className="text-[11px] text-slate-400 mt-1.5">of {totalInvoices} invoices this month</p>
           </Link>
 
           <Link to="/exceptions"
             className={cn(
-              "bg-white rounded-xl border border-gray-100 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all",
+              "bg-white rounded-xl border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all",
               openExceptionCount > 0 ? "border-l-2 border-l-red-400" : ""
             )}
           >
-            <p className="text-xs text-gray-400 mb-1.5">Open exceptions</p>
-            <p className={cn("text-2xl font-semibold", openExceptionCount > 0 ? "text-red-600" : "text-gray-400")}>
+            <p className="text-xs text-slate-500 mb-1.5">Open exceptions</p>
+            <p className={cn("text-2xl font-semibold", openExceptionCount > 0 ? "text-red-600" : "text-slate-400")}>
               {openExceptionCount}
             </p>
-            <p className="text-[11px] text-gray-400 mt-1.5">{resolvedThisMonth} resolved this month</p>
+            <p className="text-[11px] text-slate-400 mt-1.5">{resolvedThisMonth} resolved this month</p>
           </Link>
 
           <Link to="/contracts"
-            className="bg-white rounded-xl border border-gray-100 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-xl border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
-            <p className="text-xs text-gray-400 mb-1.5">Contracts active</p>
-            <p className="text-2xl font-semibold text-gray-900">{activeContracts}</p>
-            <p className="text-[11px] text-gray-400 mt-1.5">rate cards loaded</p>
+            <p className="text-xs text-slate-500 mb-1.5">Contracts active</p>
+            <p className="text-2xl font-semibold text-slate-950">{activeContracts}</p>
+            <p className="text-[11px] text-slate-400 mt-1.5">rate cards loaded</p>
           </Link>
 
         </div>
@@ -257,34 +257,34 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
 
           {/* Open exceptions */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 shrink-0">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={14} className="text-red-500" />
-                <p className="text-sm font-semibold text-gray-900">Open exceptions</p>
+                <p className="text-sm font-semibold text-slate-950">Open exceptions</p>
                 {openExceptionCount > 0 && (
                   <span className="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] font-medium text-red-600">
                     {openExceptionCount}
                   </span>
                 )}
               </div>
-              <Link to="/exceptions" className="text-xs text-[#F06B00] font-medium hover:underline flex items-center gap-0.5">
+              <Link to="/exceptions" className="text-xs text-primary font-medium hover:underline flex items-center gap-0.5">
                 View all <ChevronRight size={12} />
               </Link>
             </div>
 
-            <div className="flex-1 divide-y divide-gray-50">
+            <div className="flex-1 divide-y divide-slate-100">
               {openExceptions.length === 0 ? (
                 <div className="flex items-center justify-center h-full py-10">
-                  <p className="text-sm text-gray-400">No open exceptions</p>
+                  <p className="text-sm text-slate-400">No open exceptions</p>
                 </div>
               ) : (
                 openExceptions.map((ex) => (
-                  <div key={ex.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50/50 transition-colors">
+                  <div key={ex.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-700 leading-snug">{ex.description}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{ex.vendor} · {ex.invoiceRef}</p>
+                      <p className="text-xs text-slate-700 leading-snug">{ex.description}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{ex.vendor} · {ex.invoiceRef}</p>
                     </div>
                     <ExceptionCodeBadge code={ex.code} />
                   </div>
@@ -293,7 +293,7 @@ export default function HomePage() {
             </div>
 
             {resolvedThisMonth > 0 && (
-              <div className="px-5 py-3 border-t border-gray-50 bg-emerald-50/40 shrink-0">
+              <div className="px-5 py-3 border-t border-slate-100 bg-emerald-50/40 shrink-0">
                 <p className="text-[11px] text-emerald-700 flex items-center gap-1.5">
                   <CheckCircle2 size={11} className="shrink-0" />
                   {resolvedThisMonth} exception{resolvedThisMonth !== 1 ? "s" : ""} resolved this month — agent handled {resolvedThisMonth - 0} without escalation
@@ -303,48 +303,48 @@ export default function HomePage() {
           </div>
 
           {/* Recent activity */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 shrink-0">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 shrink-0">
               <div className="flex items-center gap-2">
-                <Activity size={14} className="text-gray-400" />
-                <p className="text-sm font-semibold text-gray-900">Recent activity</p>
+                <Activity size={14} className="text-slate-400" />
+                <p className="text-sm font-semibold text-slate-950">Recent activity</p>
               </div>
-              <Link to="/invoices" className="text-xs text-[#F06B00] font-medium hover:underline flex items-center gap-0.5">
+              <Link to="/invoices" className="text-xs text-primary font-medium hover:underline flex items-center gap-0.5">
                 See all <ChevronRight size={12} />
               </Link>
             </div>
 
-            <div className="flex-1 divide-y divide-gray-50">
+            <div className="flex-1 divide-y divide-slate-100">
               {recentInvoices.map((inv) => {
                 const dotColor =
                   inv.status === "HELD" || inv.status === "REJECTED"       ? "bg-red-400"
                   : inv.status === "APPROVED" || inv.status === "COMPLETED" ? "bg-emerald-400"
-                  : "bg-gray-300";
+                  : "bg-slate-300";
                 return (
                   <Link
                     key={inv.id}
                     to={`/invoices/${inv.id}`}
-                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/50 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors"
                   >
                     <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotColor)} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-700 truncate">
-                        <span className="font-medium text-gray-900">{inv.ref}</span>
-                        <span className="text-gray-400"> · {inv.vendor}</span>
+                      <p className="text-xs text-slate-700 truncate">
+                        <span className="font-medium text-slate-950">{inv.ref}</span>
+                        <span className="text-slate-400"> · {inv.vendor}</span>
                       </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{inv.mode} · {inv.service}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{inv.mode} · {inv.service}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <InvoiceStatusBadge status={inv.status} />
-                      <span className="text-[11px] text-gray-400 w-10 text-right">{formatDate(inv.receivedDate)}</span>
+                      <span className="text-[11px] text-slate-400 w-10 text-right">{formatDate(inv.receivedDate)}</span>
                     </div>
                   </Link>
                 );
               })}
             </div>
 
-            <div className="px-5 py-3 border-t border-gray-50 bg-gray-50/50 shrink-0">
-              <p className="text-[11px] text-gray-400">
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 shrink-0">
+              <p className="text-[11px] text-slate-400">
                 {autoCleared} of {totalInvoices} invoices cleared automatically this month
               </p>
             </div>

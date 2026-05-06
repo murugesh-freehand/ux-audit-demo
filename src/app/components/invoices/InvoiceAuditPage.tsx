@@ -79,8 +79,8 @@ function PreviousAudits({
   runs: AuditRun[]; selected: string; onSelect: (id: string) => void;
 }) {
   return (
-    <aside className="w-52 shrink-0 border-r border-gray-100 bg-white overflow-y-auto flex flex-col gap-px pt-2 pb-4">
-      <p className="px-4 pb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+    <aside className="w-52 shrink-0 border-r border-slate-200 bg-white overflow-y-auto flex flex-col gap-px pt-2 pb-4">
+      <p className="px-4 pb-2 text-xs font-medium text-slate-400 uppercase tracking-wide">
         Previous Audits
       </p>
       {runs.map((run) => {
@@ -91,17 +91,17 @@ function PreviousAudits({
             key={run.id}
             onClick={() => onSelect(run.id)}
             className={`relative mx-2 px-3 py-2.5 rounded-md text-left transition-colors ${
-              isActive ? "bg-orange-50" : "hover:bg-gray-50"
+              isActive ? "bg-orange-50" : "hover:bg-slate-50"
             }`}
           >
             {isActive && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-[#F06B00]" />
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-primary" />
             )}
             <div className="flex items-center justify-between gap-2 mb-0.5">
               <StatusPill status={run.status} />
-              <span className="text-[10px] text-gray-400 shrink-0">{fmtDate(run.startedAt)}</span>
+              <span className="text-[10px] text-slate-400 shrink-0">{fmtDate(run.startedAt)}</span>
             </div>
-            <p className="text-xs text-gray-500 truncate">{run.triggeredBy}</p>
+            <p className="text-xs text-slate-500 truncate">{run.triggeredBy}</p>
           </button>
         );
       })}
@@ -115,7 +115,7 @@ function CheckRow({ label, status }: { label: string; status: AuditOverallStatus
   const cfg = statusConfig[status];
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-gray-600">{label}</span>
+      <span className="text-sm text-slate-600">{label}</span>
       <StatusPill status={status} />
     </div>
   );
@@ -128,16 +128,16 @@ function SummaryPanel({ run }: { run: AuditRun }) {
   const Icon = cfg.icon;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
         <Icon size={18} className={cfg.iconCls} />
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-gray-900">Audit Summary</h3>
+            <h3 className="text-sm font-medium text-slate-950">Audit Summary</h3>
             <StatusPill status={run.status} size="md" />
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">{fmtDateTime(run.startedAt)}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{fmtDateTime(run.startedAt)}</p>
         </div>
       </div>
 
@@ -145,16 +145,16 @@ function SummaryPanel({ run }: { run: AuditRun }) {
         {/* Summary bullets */}
         <ul className="space-y-2">
           {run.summaryPoints.map((pt, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-              <span className="text-gray-300 mt-1 shrink-0">·</span>
+            <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+              <span className="text-slate-300 mt-1 shrink-0">·</span>
               <span>{pt}</span>
             </li>
           ))}
         </ul>
 
         {/* Audit checks — simple label + pill rows, not colored stat cards */}
-        <div className="rounded-md bg-gray-50 border border-gray-100 px-4 py-3 space-y-2.5">
-          <p className="text-xs font-medium text-gray-500 mb-1">Audit Checks</p>
+        <div className="rounded-md bg-slate-50 border border-slate-200 px-4 py-3 space-y-2.5">
+          <p className="text-xs font-medium text-slate-500 mb-1">Audit Checks</p>
           <CheckRow label="Non-rate checks" status={run.nonRateStatus} />
           <CheckRow label="Rate matching"   status={run.rateStatus} />
           <CheckRow label="Overall"         status={run.status} />
@@ -163,20 +163,20 @@ function SummaryPanel({ run }: { run: AuditRun }) {
         {/* Metadata — 4 items in a compact 2×2 grid */}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Match Mode</dt>
-            <dd className="text-sm text-gray-700">{matchModeLabel[run.matchMode] ?? run.matchMode}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Match Mode</dt>
+            <dd className="text-sm text-slate-700">{matchModeLabel[run.matchMode] ?? run.matchMode}</dd>
           </div>
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Triggered By</dt>
-            <dd className="text-sm text-gray-700">{run.triggeredBy}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Triggered By</dt>
+            <dd className="text-sm text-slate-700">{run.triggeredBy}</dd>
           </div>
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Started</dt>
-            <dd className="text-sm text-gray-700">{fmtDateTime(run.startedAt)}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Started</dt>
+            <dd className="text-sm text-slate-700">{fmtDateTime(run.startedAt)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Duration</dt>
-            <dd className="text-sm text-gray-700">{(run.durationMs / 1000).toFixed(1)}s</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Duration</dt>
+            <dd className="text-sm text-slate-700">{(run.durationMs / 1000).toFixed(1)}s</dd>
           </div>
         </dl>
       </div>
@@ -192,10 +192,10 @@ function ContractPanel({ run }: { run: AuditRun }) {
   const topRows = showAll ? c.topCandidates : c.topCandidates.slice(0, 3);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
-        <FileCheck size={15} className="text-gray-400" />
-        <h3 className="text-sm font-medium text-gray-900">Contract Match</h3>
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+        <FileCheck size={15} className="text-slate-400" />
+        <h3 className="text-sm font-medium text-slate-950">Contract Match</h3>
       </div>
 
       <div className="px-5 py-4 space-y-4">
@@ -204,38 +204,38 @@ function ContractPanel({ run }: { run: AuditRun }) {
           <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium shrink-0 mt-0.5 ${
             c.status === "MATCHED"
               ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-gray-100 text-gray-500 border-gray-200"
+              : "bg-slate-100 text-slate-500 border-slate-200"
           }`}>
             {c.status === "MATCHED" ? "Matched" : "Unmatched"}
           </span>
           <div>
-            <p className="text-sm font-medium text-gray-900">{c.name}</p>
-            <p className="text-xs text-gray-400 mt-0.5 font-mono">{c.scac}</p>
+            <p className="text-sm font-medium text-slate-950">{c.name}</p>
+            <p className="text-xs text-slate-400 mt-0.5 font-mono">{c.scac}</p>
           </div>
         </div>
 
         {/* 2×2 detail grid */}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Lane</dt>
-            <dd className="text-sm font-mono text-gray-700">{c.lane}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Lane</dt>
+            <dd className="text-sm font-mono text-slate-700">{c.lane}</dd>
           </div>
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Specificity Score</dt>
-            <dd className="text-sm text-gray-700">{c.specificityScore}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Specificity Score</dt>
+            <dd className="text-sm text-slate-700">{c.specificityScore}</dd>
           </div>
           <div>
-            <dt className="text-xs text-gray-400 mb-0.5">Precedence</dt>
-            <dd className="text-sm text-gray-700">{precedenceLabel[c.precedencePolicy] ?? c.precedencePolicy}</dd>
+            <dt className="text-xs text-slate-400 mb-0.5">Precedence</dt>
+            <dd className="text-sm text-slate-700">{precedenceLabel[c.precedencePolicy] ?? c.precedencePolicy}</dd>
           </div>
         </dl>
 
         {/* Evaluated contracts — collapsed by default */}
         {c.topCandidates.length > 0 && (
-          <div className="border-t border-gray-50 pt-4">
+          <div className="border-t border-slate-100 pt-4">
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors mb-3"
+              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors mb-3"
             >
               {showAll ? <ChevronDown size={12} /> : <ChevronRightSm size={12} />}
               <span>
@@ -244,23 +244,23 @@ function ContractPanel({ run }: { run: AuditRun }) {
               </span>
             </button>
 
-            <div className="overflow-x-auto rounded-md border border-gray-100">
+            <div className="overflow-x-auto rounded-md border border-slate-200">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/60">
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium uppercase tracking-wide w-12">Score</th>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium uppercase tracking-wide">Contract</th>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium uppercase tracking-wide w-12">Ver.</th>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium uppercase tracking-wide">Lane</th>
+                  <tr className="border-b border-slate-200 bg-slate-50/60">
+                    <th className="text-left px-3 py-2 text-slate-500 font-medium uppercase tracking-wide w-12">Score</th>
+                    <th className="text-left px-3 py-2 text-slate-500 font-medium uppercase tracking-wide">Contract</th>
+                    <th className="text-left px-3 py-2 text-slate-500 font-medium uppercase tracking-wide w-12">Ver.</th>
+                    <th className="text-left px-3 py-2 text-slate-500 font-medium uppercase tracking-wide">Lane</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-slate-100">
                   {topRows.map((r, i) => (
-                    <tr key={i} className={`${i === 0 ? "bg-green-50/40" : "hover:bg-gray-50/40"}`}>
-                      <td className={`px-3 py-2 font-medium ${i === 0 ? "text-green-700" : "text-gray-600"}`}>{r.score}</td>
-                      <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{r.name}</td>
-                      <td className="px-3 py-2 text-gray-400 font-mono">{r.version}</td>
-                      <td className="px-3 py-2 text-gray-600 font-mono">{r.lane}</td>
+                    <tr key={i} className={`${i === 0 ? "bg-green-50/40" : "hover:bg-slate-50/40"}`}>
+                      <td className={`px-3 py-2 font-medium ${i === 0 ? "text-green-700" : "text-slate-600"}`}>{r.score}</td>
+                      <td className="px-3 py-2 text-slate-600 max-w-xs truncate">{r.name}</td>
+                      <td className="px-3 py-2 text-slate-400 font-mono">{r.version}</td>
+                      <td className="px-3 py-2 text-slate-600 font-mono">{r.lane}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -270,7 +270,7 @@ function ContractPanel({ run }: { run: AuditRun }) {
             {!showAll && c.evaluatedCount > 3 && (
               <button
                 onClick={() => setShowAll(true)}
-                className="text-xs text-[#F06B00] hover:underline mt-2"
+                className="text-xs text-primary hover:underline mt-2"
               >
                 View all {c.evaluatedCount} evaluated contracts →
               </button>
@@ -293,7 +293,7 @@ const exCodeMeta: Record<string, { label: string; cls: string }> = {
 };
 
 function ExCodeBadge({ code }: { code: string }) {
-  const meta = exCodeMeta[code] ?? { label: code, cls: "bg-gray-100 text-gray-600 border-gray-200" };
+  const meta = exCodeMeta[code] ?? { label: code, cls: "bg-slate-100 text-slate-600 border-slate-200" };
   return (
     <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${meta.cls}`}>
       {meta.label}
@@ -317,7 +317,7 @@ function ExceptionsTab({ invoiceRef }: { invoiceRef: string }) {
 
   if (invExceptions.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-100 px-5 py-10 text-center text-sm text-gray-400">
+      <div className="bg-white rounded-lg border border-slate-200 px-5 py-10 text-center text-sm text-slate-400">
         No exceptions found for this invoice
       </div>
     );
@@ -334,11 +334,11 @@ function ExceptionsTab({ invoiceRef }: { invoiceRef: string }) {
           onClick={() => toggle(ex.id)}
           className={`w-full text-left px-5 py-3 flex items-center justify-between gap-4 transition-colors ${
             isResolved ? "opacity-50" : ""
-          } ${isExpanded ? "bg-gray-50/60" : "hover:bg-gray-50/40"}`}
+          } ${isExpanded ? "bg-slate-50/60" : "hover:bg-slate-50/40"}`}
         >
           <div className="flex items-center gap-3 min-w-0">
             <ExCodeBadge code={ex.code} />
-            <p className="text-sm text-gray-700 truncate">{ex.description}</p>
+            <p className="text-sm text-slate-700 truncate">{ex.description}</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {ex.variance !== null && (
@@ -347,60 +347,60 @@ function ExceptionsTab({ invoiceRef }: { invoiceRef: string }) {
               </span>
             )}
             {isExpanded ? (
-              <ChevronUp size={13} className="text-gray-400" />
+              <ChevronUp size={13} className="text-slate-400" />
             ) : (
-              <ChevronDown size={13} className="text-gray-400" />
+              <ChevronDown size={13} className="text-slate-400" />
             )}
           </div>
         </button>
 
         {/* Expanded detail panel */}
         {isExpanded && (
-          <div className="border-t border-gray-50 bg-gray-50/30 px-5 py-4">
+          <div className="border-t border-slate-100 bg-slate-50/30 px-5 py-4">
             <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-4">
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">Description</p>
-                <p className="text-sm text-gray-700">{ex.description}</p>
+                <p className="text-xs text-slate-400 mb-0.5">Description</p>
+                <p className="text-sm text-slate-700">{ex.description}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">Charge Code</p>
-                <p className="text-sm font-mono text-gray-700">{ex.chargeCode}</p>
+                <p className="text-xs text-slate-400 mb-0.5">Charge Code</p>
+                <p className="text-sm font-mono text-slate-700">{ex.chargeCode}</p>
               </div>
               {ex.variance !== null && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Variance</p>
+                  <p className="text-xs text-slate-400 mb-0.5">Variance</p>
                   <p className={`text-sm font-medium ${ex.variance > 0 ? "text-red-600" : "text-green-600"}`}>
                     {usdSigned(ex.variance)}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">Detected</p>
-                <p className="text-sm text-gray-700">{ex.date}</p>
+                <p className="text-xs text-slate-400 mb-0.5">Detected</p>
+                <p className="text-sm text-slate-700">{ex.date}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-0.5">Status</p>
+                <p className="text-xs text-slate-400 mb-0.5">Status</p>
                 <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
                   ex.status === "OPEN"     ? "bg-red-50 text-red-700 border-red-200" :
                   ex.status === "RESOLVED" ? "bg-green-50 text-green-700 border-green-200" :
                   ex.status === "DISPUTED" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                  "bg-gray-100 text-gray-600 border-gray-200"
+                  "bg-slate-100 text-slate-600 border-slate-200"
                 }`}>
                   {ex.status.charAt(0) + ex.status.slice(1).toLowerCase()}
                 </span>
               </div>
               {ex.resolvedBy && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Resolved By</p>
-                  <p className="text-sm text-gray-700">{ex.resolvedBy}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">Resolved By</p>
+                  <p className="text-sm text-slate-700">{ex.resolvedBy}</p>
                 </div>
               )}
             </div>
 
             {/* Actions — only for open exceptions */}
             {!isResolved && (
-              <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs text-gray-500 hover:text-gray-800">
+              <div className="flex items-center gap-2 pt-3 border-t border-slate-200">
+                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs text-slate-500 hover:text-slate-800">
                   Accept
                 </Button>
                 <Button
@@ -421,25 +421,25 @@ function ExceptionsTab({ invoiceRef }: { invoiceRef: string }) {
   return (
     <div className="space-y-3">
       {open.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-50 bg-gray-50/60 flex items-center gap-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Open</h3>
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center gap-2">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide">Open</h3>
             <span className="inline-flex items-center rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-600">
               {open.length}
             </span>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-slate-100">
             {open.map((ex) => <ExRow key={ex.id} ex={ex} isResolved={false} />)}
           </div>
         </div>
       )}
 
       {resolved.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-50 bg-gray-50/60">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Resolved</h3>
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide">Resolved</h3>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-slate-100">
             {resolved.map((ex) => <ExRow key={ex.id} ex={ex} isResolved={true} />)}
           </div>
         </div>
@@ -464,7 +464,7 @@ export default function InvoiceAuditPage() {
 
   if (!invoice || !activeRun) {
     return (
-      <div className="p-8 text-center text-sm text-gray-400">
+      <div className="p-8 text-center text-sm text-slate-400">
         No audit data found for this invoice.
       </div>
     );
@@ -473,28 +473,28 @@ export default function InvoiceAuditPage() {
   return (
     <div className="min-h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 shrink-0">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-          <Link to="/invoices" className="hover:text-gray-600 transition-colors">Invoice Audit</Link>
+      <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
+          <Link to="/invoices" className="hover:text-slate-600 transition-colors">Invoice Audit</Link>
           <ChevronRight size={12} />
-          <Link to={`/invoices/${invoice.id}`} className="hover:text-gray-600 transition-colors">
+          <Link to={`/invoices/${invoice.id}`} className="hover:text-slate-600 transition-colors">
             {invoice.ref}
           </Link>
           <ChevronRight size={12} />
-          <span className="text-gray-600">Audit</span>
+          <span className="text-slate-600">Audit</span>
         </nav>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               to={`/invoices/${invoice.id}`}
-              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
             >
               <ArrowLeft size={14} />
             </Link>
             <div>
-              <h1 className="text-gray-900">Audit · {invoice.ref}</h1>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <h1 className="text-slate-950">Audit · {invoice.ref}</h1>
+              <p className="text-sm text-slate-500 mt-0.5">
                 {runs.length} audit run{runs.length !== 1 ? "s" : ""} · last on {fmtDate(runs[0].startedAt)}
               </p>
             </div>
@@ -518,8 +518,8 @@ export default function InvoiceAuditPage() {
               onClick={() => setTab(t.id)}
               className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
                 tab === t.id
-                  ? "border-[#F06B00] text-[#F06B00] font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               {t.label}
@@ -555,7 +555,7 @@ export default function InvoiceAuditPage() {
           )}
 
           {tab === "disputes" && (
-            <div className="bg-white rounded-lg border border-gray-100 px-5 py-10 text-center text-sm text-gray-400 max-w-2xl">
+            <div className="bg-white rounded-lg border border-slate-200 px-5 py-10 text-center text-sm text-slate-400 max-w-2xl">
               No disputes raised for this invoice
             </div>
           )}

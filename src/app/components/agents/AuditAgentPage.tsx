@@ -47,7 +47,7 @@ const FAILURE_ACTION_ICON: Record<FailureAction, React.ElementType> = {
 
 function DirectiveCount({ count }: { count: number }) {
   if (count === 0) return (
-    <span className="inline-flex items-center rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-400">
+    <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
       0 active
     </span>
   );
@@ -70,31 +70,31 @@ function PolicyCard({
     <div
       onClick={onClick}
       className={`flex flex-col bg-white rounded-lg border px-4 py-4 cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all ${
-        isSelected ? "border-[#F06B00] ring-1 ring-[#F06B00]/20" : "border-gray-100"
+        isSelected ? "border-primary ring-1 ring-primary/20" : "border-slate-200"
       }`}
     >
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">
-          <h3 className={`text-sm font-medium truncate ${isSelected ? "text-[#F06B00]" : "text-gray-900"}`}>
+          <h3 className={`text-sm font-medium truncate ${isSelected ? "text-primary" : "text-slate-950"}`}>
             {policy.isGlobal ? (
               <span className="flex items-center gap-1.5">
-                <Globe size={13} className="text-gray-400 shrink-0" />
+                <Globe size={13} className="text-slate-400 shrink-0" />
                 {policy.vendorName}
               </span>
             ) : policy.vendorName}
           </h3>
           {policy.scac && (
-            <span className="font-mono text-xs text-gray-400 mt-0.5">{policy.scac}</span>
+            <span className="font-mono text-xs text-slate-400 mt-0.5">{policy.scac}</span>
           )}
         </div>
         {isSelected && (
-          <span className="text-xs text-[#F06B00] font-medium ml-2 shrink-0">Configure →</span>
+          <span className="text-xs text-primary font-medium ml-2 shrink-0">Configure →</span>
         )}
       </div>
       <div className="mt-2">
         <DirectiveCount count={count} />
       </div>
-      <p className="text-[11px] text-gray-400 mt-1.5">
+      <p className="text-[11px] text-slate-400 mt-1.5">
         {policy.directives.length} directive{policy.directives.length !== 1 ? "s" : ""} total
       </p>
     </div>
@@ -147,36 +147,36 @@ function ServiceTypeDropdown({
         onClick={() => setOpen(o => !o)}
         className={`w-full flex items-center justify-between gap-2 rounded-md border bg-white px-3 h-8 text-xs transition-colors ${
           open
-            ? "border-[#F06B00] ring-1 ring-[#F06B00]/20"
-            : "border-gray-200 hover:border-gray-300"
+            ? "border-primary ring-1 ring-primary/20"
+            : "border-slate-200 hover:border-gray-300"
         }`}
       >
-        <span className={allSelected ? "text-gray-400" : "text-gray-800 font-medium"}>
+        <span className={allSelected ? "text-slate-400" : "text-slate-800 font-medium"}>
           {label}
         </span>
-        <ChevronDown size={12} className={`text-gray-400 transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={12} className={`text-slate-400 transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[160px] bg-white border border-gray-200 rounded-lg shadow-md py-1 overflow-hidden">
+        <div className="absolute left-0 top-full mt-1 z-50 w-full min-w-[160px] bg-white border border-slate-200 rounded-lg shadow-md py-1 overflow-hidden">
           {/* All service types */}
           <button
             type="button"
             onClick={toggleAll}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-slate-50 transition-colors"
           >
             <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
-              allSelected ? "bg-[#F06B00] border-[#F06B00]" : "border-gray-300 bg-white"
+              allSelected ? "bg-primary border-primary" : "border-gray-300 bg-white"
             }`}>
               {allSelected && <Check size={9} strokeWidth={3} className="text-white" />}
             </span>
-            <span className={allSelected ? "font-medium text-gray-900" : "text-gray-600"}>
+            <span className={allSelected ? "font-medium text-slate-950" : "text-slate-600"}>
               All service types
             </span>
           </button>
 
-          <div className="h-px bg-gray-100 mx-2 my-1" />
+          <div className="h-px bg-slate-100 mx-2 my-1" />
 
           {options.map(svc => {
             const checked = selected.includes(svc);
@@ -185,14 +185,14 @@ function ServiceTypeDropdown({
                 key={svc}
                 type="button"
                 onClick={() => toggle(svc)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-slate-50 transition-colors"
               >
                 <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border ${
-                  checked ? "bg-[#F06B00] border-[#F06B00]" : "border-gray-300 bg-white"
+                  checked ? "bg-primary border-primary" : "border-gray-300 bg-white"
                 }`}>
                   {checked && <Check size={9} strokeWidth={3} className="text-white" />}
                 </span>
-                <span className={checked ? "font-medium text-gray-900" : "text-gray-600"}>{svc}</span>
+                <span className={checked ? "font-medium text-slate-950" : "text-slate-600"}>{svc}</span>
               </button>
             );
           })}
@@ -241,8 +241,8 @@ function ScopeBuilder({
       {/* Column labels — only shown when there are rows */}
       {rows.length > 0 && (
         <div className="flex items-center gap-2 px-0.5">
-          <span className="text-[10px] text-gray-400 uppercase tracking-wide w-[88px] shrink-0">Mode</span>
-          <span className="text-[10px] text-gray-400 uppercase tracking-wide flex-1">Service Type</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wide w-[88px] shrink-0">Mode</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wide flex-1">Service Type</span>
         </div>
       )}
 
@@ -252,7 +252,7 @@ function ScopeBuilder({
           <select
             value={row.mode}
             onChange={e => updateMode(row.rowId, e.target.value)}
-            className="h-8 w-[88px] shrink-0 rounded-md border border-gray-200 bg-white px-2 text-xs font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-[#F06B00] focus:border-[#F06B00]"
+            className="h-8 w-[88px] shrink-0 rounded-md border border-slate-200 bg-white px-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
           >
             {MODES.map(m => (
               <option key={m} value={m} disabled={usedModes.includes(m) && m !== row.mode}>
@@ -269,8 +269,8 @@ function ScopeBuilder({
               onChange={svc => updateServices(row.rowId, svc)}
             />
           ) : (
-            <div className="flex-1 flex items-center h-8 px-3 rounded-md border border-dashed border-gray-200 bg-gray-50">
-              <span className="text-xs text-gray-400">No service type for this mode</span>
+            <div className="flex-1 flex items-center h-8 px-3 rounded-md border border-dashed border-slate-200 bg-slate-50">
+              <span className="text-xs text-slate-400">No service type for this mode</span>
             </div>
           )}
 
@@ -278,7 +278,7 @@ function ScopeBuilder({
           <button
             type="button"
             onClick={() => removeRow(row.rowId)}
-            className="shrink-0 p-1 rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+            className="shrink-0 p-1 rounded text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition-colors"
           >
             <X size={13} />
           </button>
@@ -286,7 +286,7 @@ function ScopeBuilder({
       ))}
 
       {rows.length === 0 && (
-        <p className="text-xs text-gray-400 py-1">
+        <p className="text-xs text-slate-400 py-1">
           No scope set — directive applies to all modes and service types.
         </p>
       )}
@@ -295,7 +295,7 @@ function ScopeBuilder({
         <button
           type="button"
           onClick={addRow}
-          className="inline-flex items-center gap-1 text-xs text-[#F06B00] hover:underline font-medium mt-1"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium mt-1"
         >
           <Plus size={11} /> Add mode
         </button>
@@ -340,9 +340,9 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
       {/* Panel */}
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Add Agent Directive</h2>
-          <p className="text-xs text-gray-400 mt-0.5">to {policyName}</p>
+        <div className="px-6 pt-6 pb-4 border-b border-slate-200">
+          <h2 className="text-base font-semibold text-slate-950">Add Agent Directive</h2>
+          <p className="text-xs text-slate-400 mt-0.5">to {policyName}</p>
         </div>
 
         {/* Body */}
@@ -350,7 +350,7 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
 
           {/* Name */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Name</label>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">Name</label>
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
@@ -361,30 +361,30 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
 
           {/* Mode & Service Type — compound scope builder */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Mode & Service Type</label>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">Mode & Service Type</label>
             <ScopeBuilder rows={scopeRows} onChange={setScopeRows} />
           </div>
 
           {/* Failure Action */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Failure Action</label>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">Failure Action</label>
             <div className="relative">
               <select
                 value={failureAction}
                 onChange={e => setFA(e.target.value as FailureAction)}
-                className="w-full h-9 rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-[#F06B00] focus:border-[#F06B00] appearance-none"
+                className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none"
               >
                 {FAILURE_ACTIONS.map(fa => (
                   <option key={fa.value} value={fa.value}>{fa.label}</option>
                 ))}
               </select>
-              <ChevronDown size={13} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <ChevronDown size={13} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
             </div>
           </div>
 
           {/* Directive Definition */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
               Agent Directive Definition
             </label>
             <textarea
@@ -392,19 +392,19 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
               onChange={e => setDefinition(e.target.value)}
               placeholder="Describe what this agent directive checks in natural language…"
               rows={5}
-              className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#F06B00] focus:border-[#F06B00] resize-none"
+              className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-2">
+        <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-2">
           <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
           <Button
             size="sm"
             disabled={!canSubmit}
             onClick={handleCreate}
-            className="bg-[#F06B00] hover:bg-[#d85f00] text-white"
+            className="bg-primary hover:bg-[#d85f00] text-white"
           >
             Create Agent Directive
           </Button>
@@ -434,10 +434,10 @@ function VendorPolicyDetail({
   return (
     <div className="min-h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-3"
+          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
         >
           <ArrowLeft size={13} /> Back to policies
         </button>
@@ -445,14 +445,14 @@ function VendorPolicyDetail({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-gray-900">{policy.vendorName}</h1>
+              <h1 className="text-slate-950">{policy.vendorName}</h1>
               {policy.scac && (
-                <span className="inline-flex items-center rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-mono font-medium text-gray-500">
+                <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono font-medium text-slate-500">
                   {policy.scac}
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <p className="text-sm text-slate-400 mt-0.5">
               {policy.isGlobal
                 ? "Global directives run on every invoice regardless of vendor"
                 : `Vendor-specific policy for ${policy.vendorName}`}
@@ -460,7 +460,7 @@ function VendorPolicyDetail({
           </div>
           <Button
             size="sm"
-            className="gap-1.5 bg-[#F06B00] hover:bg-[#d85f00] text-white"
+            className="gap-1.5 bg-primary hover:bg-[#d85f00] text-white"
             onClick={() => setModal(true)}
           >
             <Plus size={14} /> Add Agent Directive
@@ -469,7 +469,7 @@ function VendorPolicyDetail({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-100 px-6">
+      <div className="bg-white border-b border-slate-200 px-6">
         <div className="flex items-center -mb-px">
           {[
             { id: "directives",  label: `Agent Directives (${active.length})` },
@@ -480,8 +480,8 @@ function VendorPolicyDetail({
               onClick={() => setTab(t.id as typeof tab)}
               className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
                 tab === t.id
-                  ? "border-[#F06B00] text-[#F06B00] font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               {t.label}
@@ -500,7 +500,7 @@ function VendorPolicyDetail({
           />
         )}
         {tab === "rateEngine" && (
-          <div className="bg-white rounded-lg border border-gray-100 px-5 py-10 text-center text-sm text-gray-400">
+          <div className="bg-white rounded-lg border border-slate-200 px-5 py-10 text-center text-sm text-slate-400">
             Rate engine configuration coming soon
           </div>
         )}
@@ -531,11 +531,11 @@ function DirectivesTab({
 }) {
   if (active.length === 0 && inactive.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-dashed border-gray-200 px-5 py-12 text-center">
-        <p className="text-sm text-gray-500 mb-3">No agent directives configured.</p>
+      <div className="bg-white rounded-lg border border-dashed border-slate-200 px-5 py-12 text-center">
+        <p className="text-sm text-slate-500 mb-3">No agent directives configured.</p>
         <Button
           size="sm"
-          className="gap-1.5 bg-[#F06B00] hover:bg-[#d85f00] text-white"
+          className="gap-1.5 bg-primary hover:bg-[#d85f00] text-white"
           onClick={onAdd}
         >
           <Plus size={14} /> Add Agent Directive
@@ -547,26 +547,26 @@ function DirectivesTab({
   return (
     <div className="space-y-3">
       {active.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-50 bg-gray-50/40">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/40">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
               Active · {active.length}
             </span>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-slate-100">
             {active.map(d => <DirectiveRow key={d.id} directive={d} />)}
           </div>
         </div>
       )}
 
       {inactive.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-50 bg-gray-50/40">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/40">
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
               Inactive · {inactive.length}
             </span>
           </div>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-slate-100">
             {inactive.map(d => <DirectiveRow key={d.id} directive={d} />)}
           </div>
         </div>
@@ -587,35 +587,35 @@ function DirectiveRow({ directive }: { directive: AgentDirective }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-gray-900">{directive.name}</span>
+            <span className="text-sm font-medium text-slate-950">{directive.name}</span>
             <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[11px] font-medium ${FAILURE_ACTION_STYLES[directive.failureAction]}`}>
               <Icon size={10} />
               {fa?.label}
             </span>
           </div>
 
-          <p className="text-xs text-gray-400 mt-0.5">{scopeLabel(directive.scope)}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{scopeLabel(directive.scope)}</p>
 
           {directive.definition && (
             <button
               onClick={() => setExpanded(e => !e)}
-              className="mt-1 text-xs text-gray-400 hover:text-[#F06B00] transition-colors"
+              className="mt-1 text-xs text-slate-400 hover:text-primary transition-colors"
             >
               {expanded ? "Hide definition ↑" : "Show definition ↓"}
             </button>
           )}
           {expanded && directive.definition && (
-            <p className="mt-2 text-xs text-gray-600 bg-gray-50 rounded-md px-3 py-2 border border-gray-100">
+            <p className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-md px-3 py-2 border border-slate-200">
               {directive.definition}
             </p>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <button className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <button className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
             <Edit2 size={13} />
           </button>
-          <button className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+          <button className="p-1.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
             <Trash2 size={13} />
           </button>
         </div>
@@ -678,17 +678,17 @@ export default function AuditAgentPage() {
   return (
     <div className="min-h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-          <Link to="/agents" className="hover:text-gray-600 transition-colors">Agents</Link>
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
+          <Link to="/agents" className="hover:text-slate-600 transition-colors">Agents</Link>
           <ChevronRight size={12} />
-          <span className="text-gray-600">{agent?.name ?? "Audit Agent"}</span>
+          <span className="text-slate-600">{agent?.name ?? "Audit Agent"}</span>
         </nav>
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-gray-900">{agent?.name ?? "Audit Agent"}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-slate-950">{agent?.name ?? "Audit Agent"}</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
               {agent?.description ?? "Configure validation agent directives and rate matching per carrier"}
             </p>
           </div>
@@ -700,16 +700,16 @@ export default function AuditAgentPage() {
         {/* Summary strip */}
         <div className="flex items-center gap-0 mt-3">
           <div className="pr-4">
-            <span className="text-sm font-medium text-gray-900">{totalDirectives}</span>
-            <span className="text-sm text-gray-400 ml-1.5">agent directives</span>
+            <span className="text-sm font-medium text-slate-950">{totalDirectives}</span>
+            <span className="text-sm text-slate-400 ml-1.5">agent directives</span>
           </div>
-          <span className="text-gray-200 mr-4 select-none">·</span>
+          <span className="text-slate-200 mr-4 select-none">·</span>
           <div className="pr-4">
-            <span className="text-sm font-medium text-gray-900">{policyCount}</span>
-            <span className="text-sm text-gray-400 ml-1.5">vendor policies</span>
+            <span className="text-sm font-medium text-slate-950">{policyCount}</span>
+            <span className="text-sm text-slate-400 ml-1.5">vendor policies</span>
           </div>
-          <span className="text-gray-200 mr-4 select-none">·</span>
-          <p className="text-sm text-gray-400">
+          <span className="text-slate-200 mr-4 select-none">·</span>
+          <p className="text-sm text-slate-400">
             Global directives always run. Vendor-specific directives run additionally for matching invoices.
           </p>
         </div>
@@ -718,18 +718,18 @@ export default function AuditAgentPage() {
       {/* Search + grid */}
       <div className="px-6 py-5">
         <div className="relative max-w-xs mb-4">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <Input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search vendors or SCAC…"
-            className="pl-8 text-sm bg-gray-50 border-gray-200"
+            className="pl-8 text-sm bg-slate-50 border-slate-200"
           />
         </div>
 
         {globalPolicy && (
           <div className="mb-4">
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Global</p>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Global</p>
             <div className="max-w-xs">
               <PolicyCard
                 policy={globalPolicy}
@@ -742,7 +742,7 @@ export default function AuditAgentPage() {
 
         {vendorList.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Vendor Policies</p>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Vendor Policies</p>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {vendorList.map(policy => (
                 <PolicyCard
@@ -757,7 +757,7 @@ export default function AuditAgentPage() {
         )}
 
         {filtered.length === 0 && (
-          <div className="bg-white rounded-lg border border-gray-100 px-5 py-10 text-center text-sm text-gray-400">
+          <div className="bg-white rounded-lg border border-slate-200 px-5 py-10 text-center text-sm text-slate-400">
             No vendor policies match "{search}"
           </div>
         )}

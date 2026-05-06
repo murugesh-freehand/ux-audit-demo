@@ -75,17 +75,17 @@ function ProcessingSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[640px] max-w-full flex flex-col overflow-hidden p-0">
-        <SheetHeader className="px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
+        <SheetHeader className="px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-base font-semibold text-gray-900">Processing Jobs</SheetTitle>
-            <span className="text-xs text-gray-400">{PROCESSING_JOBS} total</span>
+            <SheetTitle className="text-base font-semibold text-slate-950">Processing Jobs</SheetTitle>
+            <span className="text-xs text-slate-400">{PROCESSING_JOBS} total</span>
           </div>
           {/* Filter bar */}
           <div className="flex items-center gap-2 mt-3">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
             >
               <option value="all">All Statuses</option>
               <option value="COMPLETED">Completed</option>
@@ -99,26 +99,26 @@ function ProcessingSheet({
         <div className="flex-1 overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-white z-10">
-              <tr className="border-b border-gray-100 bg-gray-50/60">
-                <th className="text-left px-5 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">File</th>
-                <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide w-28">Status</th>
-                <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide w-20">Duration</th>
-                <th className="text-right px-5 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide w-40">Created</th>
+              <tr className="border-b border-slate-200 bg-slate-50/60">
+                <th className="text-left px-5 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">File</th>
+                <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide w-28">Status</th>
+                <th className="text-right px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide w-20">Duration</th>
+                <th className="text-right px-5 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide w-40">Created</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {filtered.map((job) => {
                 const cfg = statusCfg[job.status];
                 return (
-                  <tr key={job.id} className="hover:bg-gray-50/40 transition-colors">
+                  <tr key={job.id} className="hover:bg-slate-50/40 transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2 min-w-0">
-                        <FileText size={13} className="text-gray-300 shrink-0" />
-                        <span className="text-xs text-[#F06B00] truncate max-w-[220px]" title={job.file}>
+                        <FileText size={13} className="text-slate-300 shrink-0" />
+                        <span className="text-xs text-primary truncate max-w-[220px]" title={job.file}>
                           {job.file}
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-400 mt-0.5 pl-5">{job.type}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5 pl-5">{job.type}</p>
                     </td>
                     <td className="px-3 py-3">
                       <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>
@@ -129,12 +129,12 @@ function ProcessingSheet({
                       </span>
                     </td>
                     <td className="px-3 py-3 text-right">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-slate-500">
                         {job.durationSec !== null ? `${job.durationSec}s` : "—"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <span className="text-xs text-gray-500 whitespace-nowrap">{fmtDateTime(job.createdAt)}</span>
+                      <span className="text-xs text-slate-500 whitespace-nowrap">{fmtDateTime(job.createdAt)}</span>
                     </td>
                   </tr>
                 );
@@ -154,7 +154,7 @@ function AuditBadge({ status }: { status: AuditStatus }) {
     PASS:    { label: "Pass",    cls: "bg-green-50 text-green-700 border-green-200" },
     FAIL:    { label: "Fail",    cls: "bg-red-50 text-red-700 border-red-200" },
     WARNING: { label: "Warning", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    PENDING: { label: "Pending", cls: "bg-gray-50 text-gray-500 border-gray-200" },
+    PENDING: { label: "Pending", cls: "bg-slate-50 text-slate-500 border-slate-200" },
   };
   const { label, cls } = map[status];
   return (
@@ -189,7 +189,7 @@ function MoreFiltersPopover({
           <Filter size={13} />
           Filters
           {activeCount > 0 && (
-            <span className="ml-0.5 inline-flex items-center justify-center rounded-full bg-[#F06B00] text-white text-[10px] w-4 h-4 font-medium">
+            <span className="ml-0.5 inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] w-4 h-4 font-medium">
               {activeCount}
             </span>
           )}
@@ -197,9 +197,9 @@ function MoreFiltersPopover({
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 space-y-4" align="start">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-800">More Filters</span>
+          <span className="text-sm font-medium text-slate-800">More Filters</span>
           {activeCount > 0 && (
-            <button onClick={onReset} className="text-xs text-[#F06B00] hover:underline">
+            <button onClick={onReset} className="text-xs text-primary hover:underline">
               Reset all
             </button>
           )}
@@ -211,11 +211,11 @@ function MoreFiltersPopover({
           { label: "Audit Result", key: "auditStatus", options: ["all:All Results", "PASS:Pass", "FAIL:Fail", "WARNING:Warning", "PENDING:Pending"] },
         ].map(({ label, key, options }) => (
           <div key={key}>
-            <label className="text-xs font-medium text-gray-500 block mb-1">{label}</label>
+            <label className="text-xs font-medium text-slate-500 block mb-1">{label}</label>
             <select
               value={filters[key as keyof MoreFilters]}
               onChange={(e) => set(key as keyof MoreFilters, e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+              className="w-full text-sm border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
             >
               {options.map((opt) => {
                 const [val, lbl] = opt.split(":");
@@ -235,23 +235,23 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
   return (
     <Link
       to={`/invoices/${invoice.id}`}
-      className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50/60 transition-colors group border-b border-gray-50 last:border-0"
+      className="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50/60 transition-colors group border-b border-slate-100 last:border-0"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900">{invoice.ref}</span>
+          <span className="text-sm font-medium text-slate-950">{invoice.ref}</span>
           <StatusBadge status={invoice.status} />
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-xs text-gray-400">{invoice.vendor}</span>
-          <span className="text-gray-200">·</span>
+          <span className="text-xs text-slate-400">{invoice.vendor}</span>
+          <span className="text-slate-200">·</span>
           <ModeBadge mode={invoice.mode} />
-          <span className="text-xs text-gray-400">{invoice.type}</span>
+          <span className="text-xs text-slate-400">{invoice.type}</span>
           {/* Route — subtle, same line as metadata */}
-          <span className="text-gray-200">·</span>
-          <span className="text-xs text-gray-400 flex items-center gap-1">
+          <span className="text-slate-200">·</span>
+          <span className="text-xs text-slate-400 flex items-center gap-1">
             {invoice.origin.city}, {invoice.origin.state}
-            <span className="text-gray-300 mx-0.5">→</span>
+            <span className="text-slate-300 mx-0.5">→</span>
             {invoice.destination.city}, {invoice.destination.state}
           </span>
         </div>
@@ -260,8 +260,8 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
       <div className="hidden lg:flex items-center gap-8 text-sm">
         {/* Amount */}
         <div className="text-right w-28">
-          <p className="text-gray-900 font-medium">{usd(invoice.amount)}</p>
-          <p className="text-xs text-gray-400">{invoice.currency}</p>
+          <p className="text-slate-950 font-medium">{usd(invoice.amount)}</p>
+          <p className="text-xs text-slate-400">{invoice.currency}</p>
         </div>
         {/* Audit Status — just the badge, no sub-label */}
         <div className="text-right w-20">
@@ -269,7 +269,7 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
         </div>
         {/* Bill Date — just the date, no sub-label */}
         <div className="text-right w-28">
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-slate-600">
             {new Date(invoice.billedDate).toLocaleDateString("en-US", {
               month: "short", day: "numeric", year: "numeric",
             })}
@@ -277,7 +277,7 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
         </div>
       </div>
 
-      <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-500 transition-colors ml-2" />
+      <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors ml-2" />
     </Link>
   );
 }
@@ -324,12 +324,12 @@ export default function InvoiceListPage() {
   return (
     <div className="min-h-full">
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
+      <div className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             {/* h1 and chip on the same baseline */}
             <div className="flex items-center gap-2.5">
-              <h1 className="text-gray-900">Invoices</h1>
+              <h1 className="text-slate-950">Invoices</h1>
               <button
                 onClick={() => setProcessingOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors"
@@ -338,7 +338,7 @@ export default function InvoiceListPage() {
                 <span className="text-xs font-medium text-amber-700">{PROCESSING_JOBS} processing</span>
               </button>
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">{filtered.length} of {invoices.length} invoices</p>
+            <p className="text-sm text-slate-500 mt-0.5">{filtered.length} of {invoices.length} invoices</p>
           </div>
           <Button size="sm" className="gap-1.5">
             <Upload size={14} />
@@ -351,7 +351,7 @@ export default function InvoiceListPage() {
           <select
             value={vendorFilter}
             onChange={(e) => setVendorFilter(e.target.value)}
-            className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
           >
             <option value="all">All Vendors</option>
             {allVendors.map((v) => (
@@ -362,7 +362,7 @@ export default function InvoiceListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
           >
             <option value="all">All Statuses</option>
             {(["APPROVED", "HELD", "INCOMPLETE", "REJECTED", "COMPLETED", "PENDING"] as InvoiceStatus[]).map((s) => (
@@ -380,7 +380,7 @@ export default function InvoiceListPage() {
           {hasAnyFilter && (
             <button
               onClick={resetAll}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors ml-1"
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors ml-1"
             >
               <X size={12} /> Clear all
             </button>
@@ -390,22 +390,22 @@ export default function InvoiceListPage() {
 
       {/* Invoice list */}
       <div className="px-6 py-5">
-        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           {/* Table header */}
-          <div className="flex items-center px-5 py-3 border-b border-gray-50 bg-gray-50/50">
-            <span className="flex-1 text-xs font-medium text-gray-500 uppercase tracking-wide">Invoice</span>
+          <div className="flex items-center px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+            <span className="flex-1 text-xs font-medium text-slate-500 uppercase tracking-wide">Invoice</span>
             <div className="hidden lg:flex items-center gap-8 mr-2">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide w-28 text-right">Amount</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-28 text-right">Amount</span>
               {/* Renamed from "Audit" → "Audit Status" */}
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide w-20 text-right">Audit Status</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-20 text-right">Audit Status</span>
               {/* Renamed from "Billed" → "Bill Date" */}
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide w-28 text-right">Bill Date</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-28 text-right">Bill Date</span>
             </div>
             <span className="w-5" />
           </div>
 
           {filtered.length === 0 ? (
-            <div className="px-5 py-12 text-center text-sm text-gray-400">
+            <div className="px-5 py-12 text-center text-sm text-slate-400">
               No invoices match these filters
             </div>
           ) : (

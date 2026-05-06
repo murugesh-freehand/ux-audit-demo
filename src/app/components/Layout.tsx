@@ -83,12 +83,12 @@ function UtilityNavItem({
       className={cn(
         "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors relative",
         isActive
-          ? "bg-orange-50 text-[#F06B00] font-medium"
-          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+          ? "bg-orange-50 text-primary font-medium"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
       )}
     >
       {isActive && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r bg-[#F06B00]" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r bg-primary" />
       )}
       <Icon size={14} className="shrink-0" />
       <span>{label}</span>
@@ -116,7 +116,7 @@ function FlowNavItem({
         "relative flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors",
         isActive
           ? "bg-orange-50"
-          : "hover:bg-gray-50"
+          : "hover:bg-slate-50"
       )}
     >
       {/* Colored circle icon — sits on top of the connector line */}
@@ -131,11 +131,11 @@ function FlowNavItem({
       <div className="flex-1 min-w-0">
         <p className={cn(
           "text-sm leading-tight",
-          isActive ? "text-[#F06B00] font-medium" : "text-gray-800 font-medium"
+          isActive ? "text-primary font-medium" : "text-slate-800 font-medium"
         )}>
           {item.label}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">{item.subtitle}</p>
+        <p className="text-xs text-slate-400 mt-0.5">{item.subtitle}</p>
       </div>
 
       {/* Badge */}
@@ -154,32 +154,32 @@ export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Sidebar */}
       <aside className={cn(
-        "flex flex-col shrink-0 bg-white border-r border-gray-100 overflow-y-auto transition-all duration-200",
+        "flex flex-col shrink-0 bg-white border-r border-slate-200 overflow-y-auto transition-all duration-200",
         collapsed ? "w-14" : "w-60"
       )}>
 
         {/* Logo + controls */}
-        <div className="flex items-center justify-between px-3 py-3.5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-3 py-3.5 border-b border-slate-200">
           <div className="flex items-center gap-2">
             {/* Freehand asterisk logo */}
-            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-[#F06B00] shrink-0">
+            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary shrink-0">
               <span className="text-white text-sm font-bold leading-none select-none">✳</span>
             </div>
             {!collapsed && (
-              <span className="text-sm font-semibold text-[#F06B00]">Freehand</span>
+              <span className="text-sm font-semibold text-primary">Freehand</span>
             )}
           </div>
           {!collapsed && (
             <div className="flex items-center gap-1">
-              <button className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+              <button className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
                 <Bell size={14} />
               </button>
               <button
                 onClick={() => setCollapsed(true)}
-                className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -188,7 +188,7 @@ export default function Layout() {
           {collapsed && (
             <button
               onClick={() => setCollapsed(false)}
-              className="absolute left-14 top-3.5 p-1 rounded hover:bg-gray-100 text-gray-400 transition-colors"
+              className="absolute left-14 top-3.5 p-1 rounded hover:bg-slate-100 text-slate-400 transition-colors"
             >
               <ChevronRight size={14} />
             </button>
@@ -198,12 +198,12 @@ export default function Layout() {
         {!collapsed && (
           <>
             {/* Workspace switcher */}
-            <button className="mx-3 mt-3 flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 hover:bg-gray-100 transition-colors text-left">
+            <button className="mx-3 mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 hover:bg-slate-100 transition-colors text-left">
               <div>
-                <p className="text-xs font-semibold text-gray-900 leading-tight">SLB</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Switch workspace</p>
+                <p className="text-xs font-semibold text-slate-950 leading-tight">SLB</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Switch workspace</p>
               </div>
-              <ChevronDown size={13} className="text-gray-400 shrink-0" />
+              <ChevronDown size={13} className="text-slate-400 shrink-0" />
             </button>
 
             {/* Home */}
@@ -229,7 +229,7 @@ export default function Layout() {
             </div>
 
             {/* Divider */}
-            <div className="mx-3 my-1 border-t border-gray-100" />
+            <div className="mx-3 my-1 border-t border-slate-200" />
 
             {/* Utility nav */}
             <nav className="px-2 pb-2 space-y-0.5">
@@ -242,16 +242,16 @@ export default function Layout() {
 
         {/* User */}
         <div className={cn(
-          "flex items-center gap-2.5 px-3 py-3 border-t border-gray-100 mt-auto",
+          "flex items-center gap-2.5 px-3 py-3 border-t border-slate-200 mt-auto",
           collapsed && "justify-center"
         )}>
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-200 shrink-0">
-            <span className="text-xs font-medium text-gray-600">JD</span>
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 shrink-0">
+            <span className="text-xs font-medium text-slate-600">JD</span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-900 truncate">Jane Doe</p>
-              <p className="text-[10px] text-gray-500 truncate">Admin</p>
+              <p className="text-xs font-medium text-slate-950 truncate">Jane Doe</p>
+              <p className="text-[10px] text-slate-500 truncate">Admin</p>
             </div>
           )}
         </div>

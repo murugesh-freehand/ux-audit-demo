@@ -24,7 +24,7 @@ const CODE_META: Record<ExceptionCode, { label: string; badgeCls: string; dotCls
 const STATUS_CLS: Record<ExceptionStatus, string> = {
   OPEN:     "bg-red-50 text-red-700 border-red-200",
   RESOLVED: "bg-green-50 text-green-700 border-green-200",
-  ACCEPTED: "bg-gray-100 text-gray-600 border-gray-200",
+  ACCEPTED: "bg-slate-100 text-slate-600 border-slate-200",
   DISPUTED: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
@@ -53,22 +53,22 @@ function CategoryNav({
   categories: Category[]; selected: string; onSelect: (id: string) => void;
 }) {
   return (
-    <nav className="w-48 shrink-0 border-r border-gray-100 bg-white flex flex-col pt-2 pb-4">
+    <nav className="w-48 shrink-0 border-r border-slate-200 bg-white flex flex-col pt-2 pb-4">
       {categories.map((cat, i) => {
         const isActive = selected === cat.id;
         return (
           <React.Fragment key={cat.id}>
-            {i === 1 && <div className="mx-3 my-2 border-t border-gray-100" />}
+            {i === 1 && <div className="mx-3 my-2 border-t border-slate-200" />}
             <button
               onClick={() => onSelect(cat.id)}
               className={`relative flex items-center justify-between gap-2 mx-2 px-3 py-2 rounded-md text-sm transition-colors text-left ${
                 isActive
-                  ? "bg-orange-50 text-[#F06B00] font-medium"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-orange-50 text-primary font-medium"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
               }`}
             >
               {isActive && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r bg-[#F06B00]" />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r bg-primary" />
               )}
               <div className="flex items-center gap-2 min-w-0">
                 {cat.dotCls && cat.id !== "all" && (
@@ -78,7 +78,7 @@ function CategoryNav({
               </div>
               {cat.openCount > 0 && (
                 <span className={`inline-flex items-center justify-center rounded-full text-[10px] font-medium w-5 h-5 shrink-0 ${
-                  isActive ? "bg-[#F06B00] text-white" : "bg-gray-100 text-gray-600"
+                  isActive ? "bg-primary text-white" : "bg-slate-100 text-slate-600"
                 }`}>
                   {cat.openCount}
                 </span>
@@ -119,7 +119,7 @@ function ExceptionTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-100 bg-gray-50/60">
+          <tr className="border-b border-slate-200 bg-slate-50/60">
             {/* Select-all checkbox — only shown on open rows */}
             <th className="w-10 px-4 py-2.5">
               {!isResolved && (
@@ -128,25 +128,25 @@ function ExceptionTable({
                   checked={allSelected}
                   ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
                   onChange={() => onToggleAll(openIds)}
-                  className="rounded border-gray-300 text-[#F06B00] focus:ring-orange-200 cursor-pointer"
+                  className="rounded border-gray-300 text-primary focus:ring-orange-200 cursor-pointer"
                 />
               )}
             </th>
-            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Invoice</th>
-            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Vendor</th>
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Invoice</th>
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Vendor</th>
             {showCode && (
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
+              <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Type</th>
             )}
-            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Description</th>
-            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-            <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Variance</th>
-            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Date</th>
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Description</th>
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
+            <th className="text-right px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Variance</th>
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Date</th>
             {!isResolved && (
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Actions</th>
+              <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Actions</th>
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-slate-100">
           {rows.map((ex) => {
             const isChecked = selectedIds.has(ex.id);
             const meta = CODE_META[ex.code];
@@ -154,7 +154,7 @@ function ExceptionTable({
               <tr
                 key={ex.id}
                 className={`transition-colors ${
-                  isResolved ? "opacity-50 hover:opacity-80" : isChecked ? "bg-orange-50/40" : "hover:bg-gray-50/40"
+                  isResolved ? "opacity-50 hover:opacity-80" : isChecked ? "bg-orange-50/40" : "hover:bg-slate-50/40"
                 }`}
               >
                 <td className="w-10 px-4 py-3">
@@ -163,16 +163,16 @@ function ExceptionTable({
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => onToggle(ex.id)}
-                      className="rounded border-gray-300 text-[#F06B00] focus:ring-orange-200 cursor-pointer"
+                      className="rounded border-gray-300 text-primary focus:ring-orange-200 cursor-pointer"
                     />
                   )}
                 </td>
                 <td className="px-3 py-3">
-                  <Link to="/invoices" className="font-mono text-xs text-[#F06B00] hover:underline">
+                  <Link to="/invoices" className="font-mono text-xs text-primary hover:underline">
                     {ex.invoiceRef}
                   </Link>
                 </td>
-                <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{ex.vendor}</td>
+                <td className="px-3 py-3 text-slate-600 whitespace-nowrap">{ex.vendor}</td>
                 {showCode && (
                   <td className="px-3 py-3">
                     <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${meta.badgeCls}`}>
@@ -181,13 +181,13 @@ function ExceptionTable({
                   </td>
                 )}
                 <td className="px-3 py-3 max-w-xs">
-                  <p className="text-gray-700 truncate">{ex.description}</p>
-                  <span className="font-mono text-[10px] text-gray-400">{ex.chargeCode}</span>
+                  <p className="text-slate-700 truncate">{ex.description}</p>
+                  <span className="font-mono text-[10px] text-slate-400">{ex.chargeCode}</span>
                 </td>
                 <td className="px-3 py-3">
                   <StatusPill status={ex.status} />
                   {ex.resolvedBy && (
-                    <p className="text-[10px] text-gray-400 mt-0.5">{ex.resolvedBy}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{ex.resolvedBy}</p>
                   )}
                 </td>
                 <td className="px-3 py-3 text-right font-medium">
@@ -196,14 +196,14 @@ function ExceptionTable({
                       {usd(ex.variance)}
                     </span>
                   ) : (
-                    <span className="text-gray-400">—</span>
+                    <span className="text-slate-400">—</span>
                   )}
                 </td>
-                <td className="px-3 py-3 text-xs text-gray-500 whitespace-nowrap">{ex.date}</td>
+                <td className="px-3 py-3 text-xs text-slate-500 whitespace-nowrap">{ex.date}</td>
                 {!isResolved && (
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-1.5">
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-gray-500 hover:text-gray-800">
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-slate-500 hover:text-slate-800">
                         Accept
                       </Button>
                       <Button
@@ -239,21 +239,21 @@ function BulkActionBar({
   onClear: () => void;
 }) {
   return (
-    <div className="sticky bottom-0 left-0 right-0 z-10 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-5 py-3 flex items-center gap-3">
+    <div className="sticky bottom-0 left-0 right-0 z-10 bg-white border-t border-slate-200 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-5 py-3 flex items-center gap-3">
       {/* Count */}
-      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700">
-        <CheckSquare size={15} className="text-[#F06B00]" />
+      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700">
+        <CheckSquare size={15} className="text-primary" />
         {count} exception{count !== 1 ? "s" : ""} selected
       </span>
 
-      <div className="h-4 w-px bg-gray-200 mx-1" />
+      <div className="h-4 w-px bg-slate-200 mx-1" />
 
       {/* Accept all — ghost (less prominent: accepting is not the primary concern) */}
       <Button
         variant="ghost"
         size="sm"
         onClick={onAccept}
-        className="gap-1.5 text-gray-600 hover:text-gray-900"
+        className="gap-1.5 text-slate-600 hover:text-slate-950"
       >
         Accept selected
       </Button>
@@ -271,7 +271,7 @@ function BulkActionBar({
       {/* Clear */}
       <button
         onClick={onClear}
-        className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
+        className="ml-auto flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors"
       >
         <X size={13} />
         Clear selection
@@ -316,9 +316,9 @@ function ExceptionPane({
   const showCode = selectedCode === "all";
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {openRows.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-gray-400">
+        <div className="px-5 py-10 text-center text-sm text-slate-400">
           No open exceptions in this category
         </div>
       ) : (
@@ -336,17 +336,17 @@ function ExceptionPane({
 
       {/* Single resolved toggle at the very bottom */}
       {resolvedRows.length > 0 && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-slate-200">
           <button
             onClick={() => setShowResolved((v) => !v)}
-            className="flex items-center gap-2 w-full px-5 py-3 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50/60 transition-colors"
+            className="flex items-center gap-2 w-full px-5 py-3 text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50/60 transition-colors"
           >
             {showResolved ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
             {resolvedRows.length} resolved exception{resolvedRows.length !== 1 ? "s" : ""}
           </button>
 
           {showResolved && (
-            <div className="border-t border-gray-50 bg-gray-50/30">
+            <div className="border-t border-slate-100 bg-slate-50/30">
               <ExceptionTable
                 rows={resolvedRows}
                 showCode={showCode}
@@ -451,11 +451,11 @@ export default function ExceptionsPage() {
   return (
     <div className="min-h-full flex flex-col">
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4 shrink-0">
+      <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-gray-900">Exceptions</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-slate-950">Exceptions</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
               Audit exceptions across all invoices · {openTotal} open
             </p>
           </div>
@@ -475,8 +475,8 @@ export default function ExceptionsPage() {
               onClick={() => { setTab(t); clearSelection(); }}
               className={`px-4 py-2.5 text-sm border-b-2 transition-colors capitalize ${
                 tab === t
-                  ? "border-[#F06B00] text-[#F06B00] font-medium"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
+                  ? "border-primary text-primary font-medium"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
               {t}
@@ -486,11 +486,11 @@ export default function ExceptionsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="bg-white border-b border-gray-100 px-6 py-2.5 flex items-center gap-2 shrink-0">
+      <div className="bg-white border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 shrink-0">
         <select
           value={statusFilter}
           onChange={(e) => { setStatus(e.target.value); clearSelection(); }}
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
         >
           <option value="all">All Statuses</option>
           <option value="OPEN">Open</option>
@@ -502,7 +502,7 @@ export default function ExceptionsPage() {
         <select
           value={vendorFilter}
           onChange={(e) => { setVendor(e.target.value); clearSelection(); }}
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-[#F06B00]"
+          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
         >
           <option value="all">All Vendors</option>
           {allVendors.map((v) => (
@@ -513,16 +513,16 @@ export default function ExceptionsPage() {
         {hasFilter && (
           <button
             onClick={() => { setStatus("all"); setVendor("all"); clearSelection(); }}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors"
           >
             <X size={12} /> Clear
           </button>
         )}
 
-        <span className="ml-auto text-xs text-gray-400">
+        <span className="ml-auto text-xs text-slate-400">
           {filteredRows.filter((e) => e.status === "OPEN").length} open
           {filteredRows.filter((e) => e.status !== "OPEN").length > 0 && (
-            <span className="text-gray-300 ml-1">
+            <span className="text-slate-300 ml-1">
               · {filteredRows.filter((e) => e.status !== "OPEN").length} resolved
             </span>
           )}
