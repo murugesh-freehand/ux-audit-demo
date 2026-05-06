@@ -161,7 +161,7 @@ export default function HomePage() {
       <div className="flex-1 px-6 py-5 space-y-5">
 
         {/* Setup checklist ─────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200">
             <div>
               <p className="text-sm font-semibold text-slate-950">Finish setting up</p>
@@ -215,7 +215,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
 
           <Link to="/invoices"
-            className="bg-white rounded-xl border border-slate-200 border-l-2 border-l-emerald-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-lg border border-slate-200 border-l-2 border-l-emerald-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
             <p className="text-xs text-slate-500 mb-1.5">Approved automatically</p>
             <p className="text-2xl font-semibold text-emerald-600">{autoCleared}</p>
@@ -223,7 +223,7 @@ export default function HomePage() {
           </Link>
 
           <Link to="/invoices"
-            className="bg-white rounded-xl border border-slate-200 border-l-2 border-l-amber-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-lg border border-slate-200 border-l-2 border-l-amber-400 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
             <p className="text-xs text-slate-500 mb-1.5">Flagged for review</p>
             <p className="text-2xl font-semibold text-amber-600">{flaggedForReview}</p>
@@ -232,7 +232,7 @@ export default function HomePage() {
 
           <Link to="/exceptions"
             className={cn(
-              "bg-white rounded-xl border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all",
+              "bg-white rounded-lg border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all",
               openExceptionCount > 0 ? "border-l-2 border-l-red-400" : ""
             )}
           >
@@ -244,7 +244,7 @@ export default function HomePage() {
           </Link>
 
           <Link to="/contracts"
-            className="bg-white rounded-xl border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
+            className="bg-white rounded-lg border border-slate-200 px-4 py-4 hover:border-orange-200 hover:shadow-sm transition-all"
           >
             <p className="text-xs text-slate-500 mb-1.5">Contracts active</p>
             <p className="text-2xl font-semibold text-slate-950">{activeContracts}</p>
@@ -257,7 +257,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
 
           {/* Open exceptions */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 shrink-0">
               <div className="flex items-center gap-2">
                 <AlertTriangle size={14} className="text-red-500" />
@@ -303,7 +303,7 @@ export default function HomePage() {
           </div>
 
           {/* Recent activity */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 shrink-0">
               <div className="flex items-center gap-2">
                 <Activity size={14} className="text-slate-400" />

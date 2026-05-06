@@ -128,7 +128,7 @@ function ExceptionTable({
                   checked={allSelected}
                   ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
                   onChange={() => onToggleAll(openIds)}
-                  className="rounded border-gray-300 text-primary focus:ring-orange-200 cursor-pointer"
+                  className="rounded border-gray-300 text-primary focus:ring-ring/20 cursor-pointer"
                 />
               )}
             </th>
@@ -163,7 +163,7 @@ function ExceptionTable({
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => onToggle(ex.id)}
-                      className="rounded border-gray-300 text-primary focus:ring-orange-200 cursor-pointer"
+                      className="rounded border-gray-300 text-primary focus:ring-ring/20 cursor-pointer"
                     />
                   )}
                 </td>
@@ -490,7 +490,7 @@ export default function ExceptionsPage() {
         <select
           value={statusFilter}
           onChange={(e) => { setStatus(e.target.value); clearSelection(); }}
-          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
         >
           <option value="all">All Statuses</option>
           <option value="OPEN">Open</option>
@@ -502,7 +502,7 @@ export default function ExceptionsPage() {
         <select
           value={vendorFilter}
           onChange={(e) => { setVendor(e.target.value); clearSelection(); }}
-          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+          className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
         >
           <option value="all">All Vendors</option>
           {allVendors.map((v) => (

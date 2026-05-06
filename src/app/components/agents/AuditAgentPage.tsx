@@ -47,12 +47,12 @@ const FAILURE_ACTION_ICON: Record<FailureAction, React.ElementType> = {
 
 function DirectiveCount({ count }: { count: number }) {
   if (count === 0) return (
-    <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
+    <span className="inline-flex items-center rounded-sm border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
       0 active
     </span>
   );
   return (
-    <span className="inline-flex items-center rounded border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+    <span className="inline-flex items-center rounded-sm border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
       {count} active
     </span>
   );
@@ -252,7 +252,7 @@ function ScopeBuilder({
           <select
             value={row.mode}
             onChange={e => updateMode(row.rowId, e.target.value)}
-            className="h-8 w-[88px] shrink-0 rounded-md border border-slate-200 bg-white px-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+            className="h-8 w-[88px] shrink-0 rounded-md border border-slate-200 bg-white px-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
           >
             {MODES.map(m => (
               <option key={m} value={m} disabled={usedModes.includes(m) && m !== row.mode}>
@@ -338,7 +338,7 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-slate-200">
           <h2 className="text-base font-semibold text-slate-950">Add Agent Directive</h2>
@@ -372,7 +372,7 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
               <select
                 value={failureAction}
                 onChange={e => setFA(e.target.value as FailureAction)}
-                className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none"
+                className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 pr-8 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring appearance-none"
               >
                 {FAILURE_ACTIONS.map(fa => (
                   <option key={fa.value} value={fa.value}>{fa.label}</option>
@@ -392,7 +392,7 @@ function AddDirectiveModal({ policyName, onClose, onCreate }: AddDirectiveModalP
               onChange={e => setDefinition(e.target.value)}
               placeholder="Describe what this agent directive checks in natural language…"
               rows={5}
-              className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none"
+              className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring resize-none"
             />
           </div>
         </div>
@@ -447,7 +447,7 @@ function VendorPolicyDetail({
             <div className="flex items-center gap-2">
               <h1 className="text-slate-950">{policy.vendorName}</h1>
               {policy.scac && (
-                <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono font-medium text-slate-500">
+                <span className="inline-flex items-center rounded-sm border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono font-medium text-slate-500">
                   {policy.scac}
                 </span>
               )}

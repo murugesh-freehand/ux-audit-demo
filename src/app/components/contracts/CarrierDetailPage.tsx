@@ -61,7 +61,7 @@ function OverviewTab({ carrierId }: { carrierId: string }) {
     <div className="space-y-4">
 
       {/* Agreement summary */}
-      <div className="bg-white rounded-xl border border-slate-200 px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-4">
+      <div className="bg-white rounded-lg border border-slate-200 px-5 py-4 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-4">
         {[
           { label: "Agreement type",  value: active.type },
           { label: "Mode",            value: <ModeBadge mode={active.mode} /> },
@@ -81,7 +81,7 @@ function OverviewTab({ carrierId }: { carrierId: string }) {
 
       {/* Key Terms */}
       {active.keyTerms.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-200">
             <p className="text-sm font-semibold text-slate-950">Key Terms</p>
             <p className="text-xs text-slate-400 mt-0.5">Contract provisions that affect pricing and audit outcomes</p>
@@ -151,7 +151,7 @@ function OverviewTab({ carrierId }: { carrierId: string }) {
 
       {/* FAK Rules */}
       {active.fakRules.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
             <p className="text-sm font-semibold text-slate-950">FAK Rules</p>
             <Button variant="ghost" size="sm" className="gap-1 h-7 px-2 text-xs text-slate-500">
@@ -196,7 +196,7 @@ function ChargeCard({ charge }: { charge: ChargeDefinition }) {
   const [editingRow, setEditingRow] = useState<string | null>(null);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {/* Charge group header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-200">
         <span className="font-mono text-sm font-semibold text-slate-950">{charge.code}</span>
@@ -383,7 +383,7 @@ function DetailsTab({ carrierId }: { carrierId: string }) {
 
       {/* ── By Lane view ─────────────────────────────────────────────────── */}
       {view === "lane" && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
             <p className="text-xs text-slate-400">{filteredLanes.length.toLocaleString()} lane{filteredLanes.length !== 1 ? "s" : ""} {q && `matching "${search}"`}</p>
             <p className="text-xs text-slate-400">Showing sample — full set has {carrierContracts.find((c) => c.status === "ACTIVE")?.laneCount.toLocaleString() ?? "—"} lanes</p>
@@ -466,7 +466,7 @@ function DetailsTab({ carrierId }: { carrierId: string }) {
       {view === "charge" && (
         <div className="space-y-2">
           {filteredCharges.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 py-10 text-center text-sm text-slate-400">
+            <div className="bg-white rounded-lg border border-slate-200 py-10 text-center text-sm text-slate-400">
               No charges match "{search}"
             </div>
           ) : (
@@ -489,7 +489,7 @@ function VersionsTab({ carrierId }: { carrierId: string }) {
     .sort((a, b) => b.version - a.version);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {carrierContracts.length === 0 ? (
         <div className="py-10 text-center text-sm text-slate-400">No contract versions on file.</div>
       ) : (

@@ -85,7 +85,7 @@ function ProcessingSheet({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
             >
               <option value="all">All Statuses</option>
               <option value="COMPLETED">Completed</option>
@@ -215,7 +215,7 @@ function MoreFiltersPopover({
             <select
               value={filters[key as keyof MoreFilters]}
               onChange={(e) => set(key as keyof MoreFilters, e.target.value)}
-              className="w-full text-sm border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+              className="w-full text-sm border border-slate-200 rounded-md px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
             >
               {options.map((opt) => {
                 const [val, lbl] = opt.split(":");
@@ -351,7 +351,7 @@ export default function InvoiceListPage() {
           <select
             value={vendorFilter}
             onChange={(e) => setVendorFilter(e.target.value)}
-            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
           >
             <option value="all">All Vendors</option>
             {allVendors.map((v) => (
@@ -362,7 +362,7 @@ export default function InvoiceListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
           >
             <option value="all">All Statuses</option>
             {(["APPROVED", "HELD", "INCOMPLETE", "REJECTED", "COMPLETED", "PENDING"] as InvoiceStatus[]).map((s) => (

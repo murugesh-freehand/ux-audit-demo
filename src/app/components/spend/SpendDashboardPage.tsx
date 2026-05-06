@@ -146,7 +146,7 @@ export default function SpendDashboardPage() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
             >
               <option value="all">All Time</option>
               <option value="30d">Last 30 Days</option>
@@ -160,7 +160,7 @@ export default function SpendDashboardPage() {
             <select
               value={carrier}
               onChange={(e) => setCarrier(e.target.value)}
-              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-primary"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
             >
               <option value="all">All Carriers</option>
               <option value="AVRT">Averitt Express</option>
