@@ -62,10 +62,10 @@ export function ModeBadge({ mode, className }: ModeBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap",
-        variantStyles.mode,
+        "inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-950 px-2.5 py-0.5 text-xs font-semibold leading-4 whitespace-nowrap",
         className
       )}
+      style={{ letterSpacing: "-0.072px" }}
     >
       {mode}
     </span>

@@ -10,257 +10,342 @@ import {
   BarChart2,
   GitBranch,
   Settings,
-  Bell,
-  ChevronLeft,
   ChevronDown,
   ChevronRight,
+  LogOut,
+  Check,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "./ui/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  useSidebar,
+} from "./ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./ui/command";
 
-const PROCESSING_JOBS_COUNT = 71;
+const freehandLogo = new URL("../../assets/freehand-logo.svg", import.meta.url).href;
+const freehandMark = new URL("../../assets/freehand-mark.svg", import.meta.url).href;
 
-// ─── Flow nav items (main workflow) ──────────────────────────────────────────
+type MenuItem = {
+  label: string;
+  icon: React.ElementType;
+  path?: string;
+  hasSub?: boolean;
+};
 
-const flowItems = [
+const sections: { label?: string; items: MenuItem[] }[] = [
   {
-    label:    "Contracts",
-    subtitle: "Upload & parse rate cards",
-    icon:     FileText,
-    path:     "/contracts",
-    circleBg: "bg-amber-100",
-    iconCls:  "text-amber-700",
-    badge:    undefined as number | undefined,
+    items: [{ label: "Home", icon: Home, path: "/" }],
   },
   {
-    label:    "Invoice Audit",
-    subtitle: "Ingest & match invoices",
-    icon:     Receipt,
-    path:     "/invoices",
-    circleBg: "bg-blue-100",
-    iconCls:  "text-blue-700",
-    badge:    PROCESSING_JOBS_COUNT,
+    label: "Audit",
+    items: [
+      { label: "Exceptions", icon: AlertTriangle, path: "/exceptions" },
+      { label: "Spend Analysis", icon: TrendingDown, path: "/spend" },
+      { label: "Invoices", icon: FileText, path: "/invoices" },
+      { label: "Contracts", icon: Receipt, path: "/contracts" },
+    ],
   },
   {
-    label:    "Exceptions",
-    subtitle: "Review & resolve flags",
-    icon:     AlertTriangle,
-    path:     "/exceptions",
-    circleBg: "bg-red-100",
-    iconCls:  "text-red-600",
-    badge:    undefined,
-  },
-  {
-    label:    "Spend Analysis",
-    subtitle: "Patterns & insights",
-    icon:     TrendingDown,
-    path:     "/spend",
-    circleBg: "bg-green-100",
-    iconCls:  "text-green-700",
-    badge:    undefined,
+    label: "Config",
+    items: [
+      { label: "Agents", icon: Bot, path: "/agents" },
+      { label: "Reports", icon: BarChart2, path: "/reports" },
+      { label: "Context Graph", icon: GitBranch, path: "/graph" },
+      { label: "Configuration", icon: Settings, path: "/config", hasSub: true },
+    ],
   },
 ];
 
-// ─── Bottom utility nav items ─────────────────────────────────────────────────
-
-const utilityItems = [
-  { label: "Agents",        icon: Bot,       path: "/agents" },
-  { label: "Reports",       icon: BarChart2, path: "/reports" },
-  { label: "Context Graph", icon: GitBranch, path: "/graph" },
-  { label: "Configuration", icon: Settings,  path: "/config" },
+const workspaces = [
+  { id: "pandostaging", name: "Pandostaging" },
+  { id: "pando-prod", name: "Pando Production" },
+  { id: "pando-dev", name: "Pando Dev" },
 ];
 
-// ─── Simple utility nav item ──────────────────────────────────────────────────
+// ─── Custom toggle button (replaces SidebarTrigger so refs forward correctly for Tooltip) ──
 
-function UtilityNavItem({
-  label, icon: Icon, path,
-}: { label: string; icon: React.ElementType; path: string }) {
-  const location = useLocation();
-  const isActive =
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
-  return (
-    <Link
-      to={path}
-      className={cn(
-        "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors relative",
-        isActive
-          ? "bg-orange-50 text-primary font-medium"
-          : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-      )}
-    >
-      {isActive && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r bg-primary" />
-      )}
-      <Icon size={14} className="shrink-0" />
-      <span>{label}</span>
-    </Link>
-  );
-}
-
-// ─── Flow nav item ─────────────────────────────────────────────────────────────
-
-function FlowNavItem({
-  item,
+function SidebarToggleButton({
+  tooltip,
+  className,
+  side = "right",
 }: {
-  item: typeof flowItems[number];
+  tooltip: string;
+  className?: string;
+  side?: "top" | "right" | "bottom" | "left";
 }) {
-  const location = useLocation();
-  const isActive =
-    item.path === "/"
-      ? location.pathname === "/"
-      : location.pathname.startsWith(item.path);
-
+  const { toggleSidebar } = useSidebar();
   return (
-    <Link
-      to={item.path}
-      className={cn(
-        "relative flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors",
-        isActive
-          ? "bg-orange-50"
-          : "hover:bg-slate-50"
-      )}
-    >
-      {/* Colored circle icon — sits on top of the connector line */}
-      <div className={cn(
-        "relative z-10 flex items-center justify-center w-8 h-8 rounded-full shrink-0 ring-2 ring-white",
-        item.circleBg
-      )}>
-        <item.icon size={14} className={item.iconCls} />
-      </div>
-
-      {/* Label + subtitle */}
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          "text-sm leading-tight",
-          isActive ? "text-primary font-medium" : "text-slate-800 font-medium"
-        )}>
-          {item.label}
-        </p>
-        <p className="text-xs text-slate-400 mt-0.5">{item.subtitle}</p>
-      </div>
-
-      {/* Badge */}
-      {item.badge !== undefined && item.badge > 0 && (
-        <span className="inline-flex items-center rounded-full bg-amber-100 border border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 shrink-0">
-          {item.badge}
-        </span>
-      )}
-    </Link>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label={tooltip}
+          className={cn(
+            "inline-flex items-center justify-center size-7 rounded-md hover:bg-slate-100 transition-colors",
+            className
+          )}
+        >
+          <PanelLeft size={16} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side={side}>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 
-// ─── Main Layout ──────────────────────────────────────────────────────────────
+// ─── Menu item ─────────────────────────────────────────────────────────────────
 
-export default function Layout() {
-  const [collapsed, setCollapsed] = useState(false);
+function MenuLink({ item }: { item: MenuItem }) {
+  const location = useLocation();
+  const isActive =
+    !!item.path &&
+    (item.path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(item.path));
+
+  const button = (
+    <SidebarMenuButton
+      isActive={isActive}
+      tooltip={item.label}
+      className={cn(
+        // Inter, 14/20, regular — applied to both default and active states
+        "h-9 text-sm font-normal leading-5 data-[active=true]:font-normal",
+        "data-[active=true]:bg-slate-950 data-[active=true]:text-white",
+        "data-[active=true]:hover:bg-slate-950 data-[active=true]:hover:text-white"
+      )}
+    >
+      <item.icon />
+      <span>{item.label}</span>
+      {item.hasSub && <ChevronRight className="ml-auto" />}
+    </SidebarMenuButton>
+  );
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className={cn(
-        "flex flex-col shrink-0 bg-white border-r border-slate-200 overflow-y-auto transition-all duration-200",
-        collapsed ? "w-14" : "w-60"
-      )}>
+    <SidebarMenuItem>
+      {item.path ? (
+        <Link to={item.path} className="contents">
+          {button}
+        </Link>
+      ) : (
+        <span className="contents cursor-pointer">{button}</span>
+      )}
+    </SidebarMenuItem>
+  );
+}
 
-        {/* Logo + controls */}
-        <div className="flex items-center justify-between px-3 py-3.5 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            {/* Freehand asterisk logo */}
-            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary shrink-0">
-              <span className="text-white text-sm font-bold leading-none select-none">✳</span>
+// ─── Workspace switcher (popover + searchable command + dim backdrop) ─────────
+
+function WorkspaceSwitcher() {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(workspaces[0]);
+
+  return (
+    <>
+      {/* Dim backdrop while open */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-[#234357]/20"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="mx-3 mb-2 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-slate-950 leading-tight truncate">
+                {selected.name}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                Work space
+              </p>
             </div>
-            {!collapsed && (
-              <span className="text-sm font-semibold text-primary">Freehand</span>
-            )}
+            <ChevronDown size={14} className="text-slate-400 shrink-0 ml-2" />
+          </button>
+        </PopoverTrigger>
+        {/* sideOffset negative so the popover overlays the trigger */}
+        <PopoverContent
+          className="w-[228px] p-0 z-50"
+          align="start"
+          side="bottom"
+          sideOffset={-44}
+        >
+          <div className="px-3 pt-2.5 pb-1.5 text-[11px] font-medium text-slate-400 uppercase tracking-wide">
+            Workspace
           </div>
-          {!collapsed && (
-            <div className="flex items-center gap-1">
-              <button className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                <Bell size={14} />
-              </button>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <ChevronLeft size={14} />
-              </button>
+          <Command>
+            <CommandInput placeholder="Search workspace..." className="h-9" />
+            <CommandList>
+              <CommandEmpty>No workspace found.</CommandEmpty>
+              <CommandGroup>
+                {workspaces.map((w) => (
+                  <CommandItem
+                    key={w.id}
+                    value={w.name}
+                    onSelect={() => {
+                      setSelected(w);
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-xs font-medium text-slate-950 truncate">
+                      {w.name}
+                    </span>
+                    {selected.id === w.id && (
+                      <Check size={14} className="text-slate-500 shrink-0 ml-2" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
+}
+
+// ─── Sidebar ───────────────────────────────────────────────────────────────────
+
+function AppSidebar() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+  const triggerTooltip = collapsed ? "Open Sidebar" : "Close Sidebar";
+
+  return (
+    <Sidebar
+      collapsible="icon"
+      className="group-data-[side=left]:!border-r-0 group-data-[side=right]:!border-l-0 py-2"
+    >
+      <SidebarHeader className="gap-0 p-0">
+        {/* Row 1: logo + sidebar toggle */}
+        {collapsed ? (
+          // Mark by default; on hover swap to toggle button (with tooltip)
+          <div className="group relative flex items-center justify-center h-12">
+            <img
+              src={freehandMark}
+              alt="Freehand"
+              className="w-7 h-7 transition-opacity duration-150 group-hover:opacity-0"
+            />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <SidebarToggleButton
+                tooltip={triggerTooltip}
+                className="text-slate-600"
+              />
             </div>
-          )}
-          {collapsed && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className="absolute left-14 top-3.5 p-1 rounded hover:bg-slate-100 text-slate-400 transition-colors"
-            >
-              <ChevronRight size={14} />
-            </button>
-          )}
-        </div>
-
-        {!collapsed && (
-          <>
-            {/* Workspace switcher */}
-            <button className="mx-3 mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 hover:bg-slate-100 transition-colors text-left">
-              <div>
-                <p className="text-xs font-semibold text-slate-950 leading-tight">SLB</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Switch workspace</p>
-              </div>
-              <ChevronDown size={13} className="text-slate-400 shrink-0" />
-            </button>
-
-            {/* Home */}
-            <nav className="px-2 pt-3 pb-1">
-              <UtilityNavItem label="Home" icon={Home} path="/" />
-            </nav>
-
-            {/* Flow nav: Contracts → Invoice Audit → Exceptions → Spend Analysis */}
-            <div className="px-2 pb-1">
-              {/* Relative wrapper for the connector line */}
-              <div className="relative">
-                {/* Vertical connector line — runs between circle centers */}
-                <div
-                  className="absolute left-[1.375rem] top-5 bottom-5 w-px bg-orange-200"
-                  style={{ zIndex: 0 }}
-                />
-                <div className="space-y-0.5 relative">
-                  {flowItems.map((item) => (
-                    <FlowNavItem key={item.path} item={item} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="mx-3 my-1 border-t border-slate-200" />
-
-            {/* Utility nav */}
-            <nav className="px-2 pb-2 space-y-0.5">
-              {utilityItems.map((item) => (
-                <UtilityNavItem key={item.path} {...item} />
-              ))}
-            </nav>
-          </>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between px-3 py-3">
+            <img src={freehandLogo} alt="Freehand" className="h-6" />
+            <SidebarToggleButton
+              tooltip={triggerTooltip}
+              className="text-slate-400"
+            />
+          </div>
         )}
 
-        {/* User */}
-        <div className={cn(
-          "flex items-center gap-2.5 px-3 py-3 border-t border-slate-200 mt-auto",
-          collapsed && "justify-center"
-        )}>
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-200 shrink-0">
-            <span className="text-xs font-medium text-slate-600">JD</span>
+        {/* Row 2: workspace switcher (hidden when collapsed) */}
+        {!collapsed && <WorkspaceSwitcher />}
+      </SidebarHeader>
+
+      <SidebarContent>
+        {sections.map((section, idx) => (
+          <React.Fragment key={idx}>
+            {idx > 0 && collapsed && <SidebarSeparator className="my-0" />}
+            <SidebarGroup className="py-1">
+              {section.label && (
+                <SidebarGroupLabel className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">
+                  {section.label}
+                </SidebarGroupLabel>
+              )}
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {section.items.map((item) => (
+                    <MenuLink key={item.label} item={item} />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </React.Fragment>
+        ))}
+      </SidebarContent>
+
+      <SidebarFooter className="p-3">
+        <div
+          className={cn(
+            "flex items-center gap-2.5",
+            collapsed && "justify-center"
+          )}
+        >
+          {/* Rounded rectangle dark avatar */}
+          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-slate-900 shrink-0">
+            <span className="text-xs font-medium text-white">JD</span>
           </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-950 truncate">Jane Doe</p>
-              <p className="text-[10px] text-slate-500 truncate">Admin</p>
-            </div>
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-950 truncate">
+                  Jane Doe
+                </p>
+                <p className="text-[11px] text-slate-500 truncate">Admin</p>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Log out"
+                    className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Log out</TooltipContent>
+              </Tooltip>
+            </>
           )}
         </div>
-      </aside>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
-      </main>
-    </div>
+export default function Layout() {
+  return (
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-[#fafafa] overflow-hidden">
+        <AppSidebar />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
