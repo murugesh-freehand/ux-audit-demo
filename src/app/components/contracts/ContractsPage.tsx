@@ -1,23 +1,47 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Link } from "react-router";
+import React, { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate } from "react-router";
 import {
   Upload,
   History,
-  X,
   Copy,
   Check,
   Clock,
   AlertCircle,
-  Search,
+  ChevronsUpDown,
+  ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 import { Progress } from "../ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
+import {
+  DataTableHeader,
+  DataTableTabs,
+  SearchWithColumnPicker,
+  QuickFiltersPopover,
+  FilterChipsBar,
+  applyQuickFilters,
+  applyAdvancedRules,
+  applySearch,
+  type FilterFieldDef,
+  type FilterState,
+  type AdvancedFilterRule,
+  type SearchColumn,
+} from "../shared/data-table";
 import { cn } from "../ui/utils";
 import {
   carriers,
@@ -25,26 +49,84 @@ import {
   lanes,
   uploadJobs,
   type Carrier,
+  type Mode,
 } from "../../data/mockData";
 
-// ─── Demo reference date (aligns with mock data timeline) ────────────────────
+// ─── Demo reference date ──────────────────────────────────────────────────────
 const DEMO_TODAY = new Date("2026-05-08T00:00:00");
-
 function daysUntil(dateStr: string): number {
-  return Math.ceil((new Date(dateStr).getTime() - DEMO_TODAY.getTime()) / 86_400_000);
+  return Math.ceil(
+    (new Date(dateStr).getTime() - DEMO_TODAY.getTime()) / 86_400_000
+  );
 }
-
 function fmt(date: string) {
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+function fmtLong(date: string) {
+  const d = new Date(date);
+  return `${d.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })} - ${d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })}`;
 }
 
-// ─── Upload History ───────────────────────────────────────────────────────────
+// ─── Synthetic "Last Updated by" data ─────────────────────────────────────────
+const CARRIER_USERS = [
+  { id: "ID002", name: "Jessi Smith" },
+  { id: "ID098", name: "David Bruno" },
+  { id: "ID104", name: "Riley Chen" },
+  { id: "ID057", name: "Amelia Park" },
+];
+function userForCarrier(carrierId: string) {
+  let h = 0;
+  for (let i = 0; i < carrierId.length; i++) h = (h * 31 + carrierId.charCodeAt(i)) >>> 0;
+  return CARRIER_USERS[h % CARRIER_USERS.length];
+}
+function initials(name: string) {
+  return name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+}
 
+// ─── Avatar (neutral, monochrome) ─────────────────────────────────────────────
+function Avatar({ name, size = 24 }: { name: string; size?: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-medium shrink-0"
+      style={{ width: size, height: size, fontSize: size <= 20 ? 10 : 11 }}
+    >
+      {initials(name)}
+    </span>
+  );
+}
+function UserCell({ user }: { user: { name: string; id: string } }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar name={user.name} />
+      <span className="text-sm text-slate-900 whitespace-nowrap">
+        {user.id} - {user.name}
+      </span>
+    </div>
+  );
+}
+
+// ─── Upload History sheet ─────────────────────────────────────────────────────
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }}
       className="ml-1 text-slate-400 hover:text-slate-600 transition-colors"
       title="Copy"
     >
@@ -57,22 +139,31 @@ function UploadHistorySheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-slate-500 hover:text-slate-800">
-          <History size={14} /> Upload History
-        </Button>
+        <button className="inline-flex items-center gap-2 h-8 px-3 rounded-md text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors">
+          <History size={14} />
+          Upload History
+        </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[640px] max-w-full flex flex-col overflow-hidden p-0">
+      <SheetContent
+        side="right"
+        className="w-[640px] max-w-full flex flex-col overflow-hidden p-0"
+      >
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
-          <SheetTitle className="text-base font-semibold text-slate-950">Upload History</SheetTitle>
+          <SheetTitle className="text-base font-semibold text-slate-950">
+            Upload History
+          </SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto">
           <table className="w-full text-sm table-fixed">
             <colgroup>
-              <col className="w-[210px]" /><col className="w-[90px]" />
-              <col className="w-[110px]" /><col className="w-[auto]" /><col className="w-[60px]" />
+              <col className="w-[210px]" />
+              <col className="w-[90px]" />
+              <col className="w-[110px]" />
+              <col className="w-[auto]" />
+              <col className="w-[60px]" />
             </colgroup>
             <thead className="sticky top-0 bg-white z-10">
-              <tr className="border-b border-slate-200 bg-slate-50/60">
+              <tr className="bg-slate-50/60">
                 <th className="text-left px-5 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Job Ref</th>
                 <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Carrier</th>
                 <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
@@ -80,9 +171,10 @@ function UploadHistorySheet() {
                 <th className="text-right px-5 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Rates</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {uploadJobs.map((job) => {
-                const shortRef = job.ref.length > 26 ? job.ref.slice(0, 26) + "…" : job.ref;
+                const shortRef =
+                  job.ref.length > 26 ? job.ref.slice(0, 26) + "…" : job.ref;
                 return (
                   <tr key={job.id} className="hover:bg-slate-50/40 transition-colors">
                     <td className="px-5 py-3">
@@ -91,7 +183,7 @@ function UploadHistorySheet() {
                         <CopyButton text={job.ref} />
                       </div>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        {new Date(job.uploadedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {fmt(job.uploadedAt)}
                       </p>
                     </td>
                     <td className="px-3 py-3">
@@ -101,12 +193,20 @@ function UploadHistorySheet() {
                     <td className="px-3 py-3">
                       <div className="space-y-1">
                         <StatusBadge status={job.status} />
-                        {job.status === "PROCESSING" && <Progress value={job.progress} className="h-1 w-16" />}
+                        {job.status === "PROCESSING" && (
+                          <Progress value={job.progress} className="h-1 w-16" />
+                        )}
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs text-slate-700 truncate block max-w-full">{job.files[0]}</span>
-                      {job.files.length > 1 && <span className="text-[11px] text-slate-400">+{job.files.length - 1} more</span>}
+                      <span className="text-xs text-slate-700 truncate block max-w-full">
+                        {job.files[0]}
+                      </span>
+                      {job.files.length > 1 && (
+                        <span className="text-[11px] text-slate-400">
+                          +{job.files.length - 1} more
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3 text-right text-xs text-slate-700">
                       {job.rates > 0 ? job.rates.toLocaleString() : "—"}
@@ -122,684 +222,613 @@ function UploadHistorySheet() {
   );
 }
 
-// ─── Carrier Row ──────────────────────────────────────────────────────────────
-
-function CarrierRow({ carrier }: { carrier: Carrier }) {
-  return (
-    <Link
-      to={`/contracts/${carrier.id}`}
-      className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/60 transition-colors group border-b border-slate-100 last:border-0"
-    >
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-950">{carrier.name}</span>
-          <span className="font-mono text-xs text-slate-400">{carrier.scac}</span>
-        </div>
-        <div className="flex items-center gap-1.5 mt-1">
-          {carrier.modes.map((m) => <ModeBadge key={m} mode={m} />)}
-        </div>
-      </div>
-      <div className="hidden md:flex items-center gap-8 text-sm">
-        <p className="text-slate-950 font-medium w-20 text-right">{carrier.activeLanes.toLocaleString()}</p>
-        <p className="text-slate-500 text-xs font-medium w-20 text-right">{carrier.totalLanes.toLocaleString()}</p>
-        <p className="text-slate-500 text-xs w-24 text-right">
-          {new Date(carrier.lastUpdated).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-        </p>
-      </div>
-      <div className="flex items-center ml-4">
-        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
-      </div>
-    </Link>
-  );
-}
-
-// ─── Validity Cell ────────────────────────────────────────────────────────────
-
-function ValidityCell({ validFrom, validTo }: { validFrom: string; validTo: string }) {
+// ─── Validity cell ────────────────────────────────────────────────────────────
+function ValidityCell({
+  validFrom,
+  validTo,
+}: {
+  validFrom: string;
+  validTo: string;
+}) {
   const days = daysUntil(validTo);
   const range = `${fmt(validFrom)} – ${fmt(validTo)}`;
-  if (days < 0) return (
-    <div>
-      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-1.5 py-0.5 text-[10px] font-medium text-red-700 whitespace-nowrap">
-        <AlertCircle size={9} /> Expired
-      </span>
-      <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
-    </div>
-  );
-  if (days <= 30) return (
-    <div>
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 whitespace-nowrap">
-        <AlertCircle size={11} /> {days}d left
-      </span>
-      <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
-    </div>
-  );
-  if (days <= 60) return (
-    <div>
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 whitespace-nowrap">
-        <Clock size={11} /> {days}d left
-      </span>
-      <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
-    </div>
-  );
+  if (days < 0)
+    return (
+      <div>
+        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-1.5 py-0.5 text-[10px] font-medium text-red-700 whitespace-nowrap">
+          <AlertCircle size={9} /> Expired
+        </span>
+        <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
+      </div>
+    );
+  if (days <= 30)
+    return (
+      <div>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 whitespace-nowrap">
+          <AlertCircle size={11} /> {days}d left
+        </span>
+        <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
+      </div>
+    );
+  if (days <= 60)
+    return (
+      <div>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 whitespace-nowrap">
+          <Clock size={11} /> {days}d left
+        </span>
+        <p className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">{range}</p>
+      </div>
+    );
   return <p className="text-xs text-slate-500 whitespace-nowrap">{range}</p>;
 }
 
-// ─── Shared: click-outside hook ───────────────────────────────────────────────
-
-function useClickOutside(cb: () => void) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function h(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) cb();
-    }
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, [cb]);
-  return ref;
+// ─── Sortable header cell ─────────────────────────────────────────────────────
+function ColHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 leading-5 whitespace-nowrap">
+      {children}
+      <ChevronsUpDown size={14} className="text-slate-400" />
+    </span>
+  );
 }
 
-// ─── MultiSelectDropdown ──────────────────────────────────────────────────────
-// Explicit filter dropdown with checkbox list. Optionally searchable (for long lists).
-
-function MultiSelectDropdown({
-  label,
-  options,
-  selected,
-  onToggle,
-  onClear,
-  searchable = false,
+// ─── Pagination footer ────────────────────────────────────────────────────────
+function PaginationFooter({
+  total,
+  page,
+  pageSize,
+  onPage,
+  onPageSize,
 }: {
-  label: string;
-  options: { value: string; label: string }[];
-  selected: Set<string>;
-  onToggle: (v: string) => void;
-  onClear: () => void;
-  searchable?: boolean;
+  total: number;
+  page: number;
+  pageSize: number;
+  onPage: (p: number) => void;
+  onPageSize: (s: number) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const close = () => { setOpen(false); setQuery(""); };
-  const ref = useClickOutside(close);
-
-  const displayed = searchable && query
-    ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
-    : options;
-
-  let btnLabel = label;
-  if (selected.size === 1) {
-    const match = options.find(o => o.value === [...selected][0]);
-    const name = match?.label ?? label;
-    btnLabel = name.length > 18 ? name.slice(0, 16) + "…" : name;
-  } else if (selected.size > 1) {
-    btnLabel = `${label} (${selected.size})`;
-  }
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
 
   return (
-    <div className="relative shrink-0" ref={ref}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors whitespace-nowrap",
-          selected.size > 0
-            ? "border-primary bg-orange-50 text-primary"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-800"
-        )}
-      >
-        {btnLabel}
-        <ChevronDown size={12} className={cn("transition-transform shrink-0", open && "rotate-180")} />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 top-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg z-20 min-w-[180px]">
-          {searchable && (
-            <div className="p-2 border-b border-slate-100">
-              <div className="relative">
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                <input
-                  autoFocus
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Search…"
-                  className="w-full text-xs pl-7 pr-2 py-1.5 rounded border border-slate-200 focus:outline-none focus:border-primary bg-slate-50 focus:bg-white"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="p-1.5 space-y-0.5 max-h-52 overflow-y-auto">
-            {displayed.length === 0 ? (
-              <p className="text-xs text-slate-400 px-2 py-2 text-center">No results</p>
-            ) : displayed.map(({ value, label: optLabel }) => (
-              <label
-                key={value}
-                className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-slate-50 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(value)}
-                  onChange={() => onToggle(value)}
-                  className="h-3.5 w-3.5 rounded border-slate-300 accent-primary cursor-pointer shrink-0"
-                />
-                <span className="text-sm text-slate-700">{optLabel}</span>
-              </label>
+    <div className="flex items-center justify-between gap-4 px-5 py-3 border-t border-slate-200 bg-white">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-500">Rows per page</span>
+        <Select
+          value={String(pageSize)}
+          onValueChange={(v) => onPageSize(Number(v))}
+        >
+          <SelectTrigger className="h-8 w-[72px] text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[10, 25, 50, 100].map((n) => (
+              <SelectItem key={n} value={String(n)}>
+                {n}
+              </SelectItem>
             ))}
-          </div>
+          </SelectContent>
+        </Select>
+      </div>
 
-          {selected.size > 0 && (
-            <div className="px-3 py-2 border-t border-slate-100">
-              <button onClick={onClear} className="text-[11px] text-slate-400 hover:text-primary transition-colors">
-                Clear selection
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="text-xs text-slate-500">
+        {start}–{end} of {total}
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPage(Math.max(1, page - 1))}
+          disabled={page <= 1}
+          className="inline-flex items-center justify-center size-8 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Previous page"
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <span className="text-xs text-slate-600 px-2 min-w-[54px] text-center">
+          Page {page} / {totalPages}
+        </span>
+        <button
+          onClick={() => onPage(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages}
+          className="inline-flex items-center justify-center size-8 rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Next page"
+        >
+          <ChevronRight size={14} />
+        </button>
+      </div>
     </div>
   );
 }
 
-// ─── ExpiryFilter ─────────────────────────────────────────────────────────────
-
-type ValidityFilter = "all" | "30d" | "60d" | "expired";
-
-const EXPIRY_OPTIONS: { value: ValidityFilter; label: string }[] = [
-  { value: "all",     label: "All"          },
-  { value: "30d",     label: "≤ 30 days"    },
-  { value: "60d",     label: "≤ 60 days"    },
-  { value: "expired", label: "Expired"      },
+const MODE_OPTIONS: { value: Mode; label: string }[] = [
+  { value: "LTL", label: "LTL" },
+  { value: "FTL", label: "FTL" },
+  { value: "ROAD", label: "Road" },
+  { value: "AIR", label: "Air" },
+  { value: "OCEAN", label: "Ocean" },
 ];
 
-function ExpiryFilter({ value, onChange }: { value: ValidityFilter; onChange: (v: ValidityFilter) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useClickOutside(() => setOpen(false));
-  const active = EXPIRY_OPTIONS.find(o => o.value === value)!;
+// ─── Carriers logic ───────────────────────────────────────────────────────────
+function useCarrierTable() {
+  const [search, setSearch] = useState("");
+  const [searchCols, setSearchCols] = useState<string[]>(["scac", "name"]);
+  const [quick, setQuick] = useState<FilterState>({});
+  const [advanced, setAdvanced] = useState<AdvancedFilterRule[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
-  return (
-    <div className="relative shrink-0" ref={ref}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors whitespace-nowrap",
-          value !== "all"
-            ? "border-primary bg-orange-50 text-primary"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-800"
-        )}
-      >
-        {value === "all" ? "Expiry" : active.label}
-        <ChevronDown size={12} className={cn("transition-transform shrink-0", open && "rotate-180")} />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 top-full mt-1.5 bg-white rounded-lg border border-slate-200 shadow-lg z-20 min-w-[140px] py-1">
-          {EXPIRY_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={cn(
-                "w-full text-left px-3 py-2 text-sm transition-colors",
-                opt.value === value
-                  ? "text-primary font-medium bg-orange-50"
-                  : "text-slate-700 hover:bg-slate-50"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+  const fields: FilterFieldDef<Carrier>[] = useMemo(
+    () => [
+      {
+        id: "mode",
+        label: "Mode",
+        type: "select-multi",
+        options: MODE_OPTIONS,
+        getValue: (c) => c.modes as string[],
+      },
+      {
+        id: "lastUpdatedBy",
+        label: "Last Updated by",
+        type: "user-multi",
+        options: CARRIER_USERS.map((u) => ({
+          value: u.id,
+          label: `${u.id} - ${u.name}`,
+          initials: initials(u.name),
+        })),
+        getValue: (c) => userForCarrier(c.id).id,
+      },
+      {
+        id: "lastUpdatedAt",
+        label: "Last Updated at",
+        type: "date-range",
+        getValue: (c) => c.lastUpdated,
+      },
+    ],
+    []
   );
+
+  const searchColumns: SearchColumn[] = [
+    { id: "scac", label: "SCAC" },
+    { id: "name", label: "Carrier Name" },
+  ];
+  const searchable = [
+    { id: "scac", getText: (c: Carrier) => c.scac },
+    { id: "name", getText: (c: Carrier) => c.name },
+  ];
+
+  const filtered = useMemo(() => {
+    let rows: Carrier[] = carriers;
+    rows = applySearch(rows, search, searchCols, searchable);
+    rows = applyQuickFilters(rows, fields, quick);
+    rows = applyAdvancedRules(rows, fields, advanced);
+    return rows;
+  }, [search, searchCols, quick, advanced, fields]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => setPage(1), [search, searchCols, quick, advanced]);
+
+  const start = (page - 1) * pageSize;
+  const visible = filtered.slice(start, start + pageSize);
+
+  return {
+    fields,
+    searchColumns,
+    search,
+    setSearch,
+    searchCols,
+    setSearchCols,
+    quick,
+    setQuick,
+    advanced,
+    setAdvanced,
+    visible,
+    total: filtered.length,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+  };
 }
 
-// ─── More Filters (Mode · Service Type · Status) ──────────────────────────────
+// ─── Lanes logic ──────────────────────────────────────────────────────────────
+function useLanesTable() {
+  const [search, setSearch] = useState("");
+  const [searchCols, setSearchCols] = useState<string[]>([
+    "ref",
+    "carrier",
+    "service",
+    "origin",
+    "destination",
+  ]);
+  const [quick, setQuick] = useState<FilterState>({});
+  const [advanced, setAdvanced] = useState<AdvancedFilterRule[]>([]);
+  const [deactivated, setDeactivated] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
-interface MoreFiltersProps {
-  modeFilters: Set<string>;
-  serviceFilters: Set<string>;
-  statusFilters: Set<string>;
-  serviceTypes: string[];
-  activeCount: number;
-  onToggleMode: (v: string) => void;
-  onToggleService: (v: string) => void;
-  onToggleStatus: (v: string) => void;
-  onClear: () => void;
-}
-
-function MoreFilters({
-  modeFilters, serviceFilters, statusFilters,
-  serviceTypes, activeCount,
-  onToggleMode, onToggleService, onToggleStatus, onClear,
-}: MoreFiltersProps) {
-  const [open, setOpen] = useState(false);
-  const ref = useClickOutside(() => setOpen(false));
-
-  function CheckList({
-    label, options, selected, onToggle,
-  }: { label: string; options: { value: string; label: string }[]; selected: Set<string>; onToggle: (v: string) => void }) {
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</span>
-          {selected.size > 0 && <span className="text-[10px] font-semibold text-primary">{selected.size} selected</span>}
-        </div>
-        <div className="space-y-0.5">
-          {options.map(({ value, label: optLabel }) => (
-            <label key={value} className="flex items-center gap-2 px-1 py-1 rounded cursor-pointer hover:bg-slate-50 transition-colors">
-              <input type="checkbox" checked={selected.has(value)} onChange={() => onToggle(value)}
-                className="h-3.5 w-3.5 rounded border-slate-300 accent-primary cursor-pointer" />
-              <span className="text-sm text-slate-700">{optLabel}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative shrink-0" ref={ref}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors",
-          activeCount > 0
-            ? "border-primary bg-orange-50 text-primary"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-800"
-        )}
-      >
-        <SlidersHorizontal size={13} />
-        More
-        {activeCount > 0 && (
-          <span className="inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] font-semibold w-4 h-4 leading-none">
-            {activeCount}
-          </span>
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white rounded-lg border border-slate-200 shadow-lg z-20 p-3 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700">More filters</span>
-            {activeCount > 0 && (
-              <button onClick={onClear} className="text-[11px] text-slate-400 hover:text-primary transition-colors">Clear all</button>
-            )}
-          </div>
-
-          <CheckList
-            label="Mode"
-            options={[
-              { value: "LTL",   label: "LTL"   },
-              { value: "FTL",   label: "FTL"   },
-              { value: "ROAD",  label: "Road"  },
-              { value: "AIR",   label: "Air"   },
-              { value: "OCEAN", label: "Ocean" },
-            ]}
-            selected={modeFilters}
-            onToggle={onToggleMode}
-          />
-
-          <CheckList
-            label="Service Type"
-            options={serviceTypes.map(s => ({ value: s, label: s }))}
-            selected={serviceFilters}
-            onToggle={onToggleService}
-          />
-
-          <CheckList
-            label="Status"
-            options={[
-              { value: "ACTIVE",   label: "Active"   },
-              { value: "INACTIVE", label: "Inactive" },
-            ]}
-            selected={statusFilters}
-            onToggle={onToggleStatus}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Lanes Tab ────────────────────────────────────────────────────────────────
-
-function LanesTab() {
-  const [search, setSearch]                   = useState("");
-  const [originFilters, setOriginFilters]     = useState<Set<string>>(new Set());
-  const [destFilters, setDestFilters]         = useState<Set<string>>(new Set());
-  const [carrierFilters, setCarrierFilters]   = useState<Set<string>>(new Set());
-  const [validityFilter, setValidityFilter]   = useState<ValidityFilter>("all");
-  const [modeFilters, setModeFilters]         = useState<Set<string>>(new Set());
-  const [serviceFilters, setServiceFilters]   = useState<Set<string>>(new Set());
-  const [statusFilters, setStatusFilters]     = useState<Set<string>>(new Set());
-  const [deactivated, setDeactivated]         = useState<Set<string>>(new Set());
-
-  function toggle(setter: React.Dispatch<React.SetStateAction<Set<string>>>) {
-    return (v: string) => setter(prev => {
-      const next = new Set(prev);
-      next.has(v) ? next.delete(v) : next.add(v);
-      return next;
-    });
-  }
-
-  // Lane → Carrier join
   const carrierMap = useMemo(() => {
     const m = new Map<string, Carrier>();
-    lanes.forEach(lane => {
-      const contract = contracts.find(c => c.id === lane.contractId);
+    lanes.forEach((lane) => {
+      const contract = contracts.find((c) => c.id === lane.contractId);
       if (contract) {
-        const carrier = carriers.find(c => c.id === contract.carrierId);
+        const carrier = carriers.find((c) => c.id === contract.carrierId);
         if (carrier) m.set(lane.id, carrier);
       }
     });
     return m;
   }, []);
 
-  const laneCarriers = useMemo(() => {
+  const enriched = useMemo(
+    () =>
+      lanes.map((l) => ({
+        ...l,
+        carrier: carrierMap.get(l.id),
+        effectiveStatus: (deactivated.has(l.id) ? "INACTIVE" : l.status) as
+          | "ACTIVE"
+          | "INACTIVE",
+      })),
+    [carrierMap, deactivated]
+  );
+  type EnrichedLane = (typeof enriched)[number];
+
+  const services = useMemo(() => [...new Set(lanes.map((l) => l.service))].sort(), []);
+  const origins = useMemo(
+    () => [...new Set(lanes.map((l) => `${l.origin.city}, ${l.origin.state}`))].sort(),
+    []
+  );
+  const dests = useMemo(
+    () => [...new Set(lanes.map((l) => `${l.destination.city}, ${l.destination.state}`))].sort(),
+    []
+  );
+  const carrierOpts = useMemo(() => {
     const seen = new Set<string>();
-    const result: Carrier[] = [];
-    lanes.forEach(lane => {
+    const out: Carrier[] = [];
+    for (const lane of lanes) {
       const c = carrierMap.get(lane.id);
-      if (c && !seen.has(c.id)) { seen.add(c.id); result.push(c); }
-    });
-    return result.sort((a, b) => a.name.localeCompare(b.name));
+      if (c && !seen.has(c.id)) {
+        seen.add(c.id);
+        out.push(c);
+      }
+    }
+    return out.sort((a, b) => a.name.localeCompare(b.name));
   }, [carrierMap]);
 
-  const serviceTypes = useMemo(() => [...new Set(lanes.map(l => l.service))].sort(), []);
+  const fields: FilterFieldDef<EnrichedLane>[] = useMemo(
+    () => [
+      {
+        id: "mode",
+        label: "Mode",
+        type: "select-multi",
+        options: MODE_OPTIONS,
+        getValue: (l) => l.mode,
+      },
+      {
+        id: "service",
+        label: "Service Type",
+        type: "select-multi",
+        options: services.map((s) => ({ value: s, label: s })),
+        getValue: (l) => l.service,
+      },
+      {
+        id: "origin",
+        label: "Origin",
+        type: "select-multi",
+        options: origins.map((o) => ({ value: o, label: o })),
+        getValue: (l) => `${l.origin.city}, ${l.origin.state}`,
+      },
+      {
+        id: "destination",
+        label: "Destination",
+        type: "select-multi",
+        options: dests.map((d) => ({ value: d, label: d })),
+        getValue: (l) => `${l.destination.city}, ${l.destination.state}`,
+      },
+      {
+        id: "carrier",
+        label: "Carrier",
+        type: "search-multi",
+        options: carrierOpts.map((c) => ({ value: c.id, label: c.name })),
+        getValue: (l) => l.carrier?.id ?? "",
+      },
+      {
+        id: "status",
+        label: "Status",
+        type: "select-multi",
+        options: [
+          { value: "ACTIVE", label: "Active", dotColor: "bg-emerald-500" },
+          { value: "INACTIVE", label: "Inactive", dotColor: "bg-slate-400" },
+        ],
+        getValue: (l) => l.effectiveStatus,
+      },
+      {
+        id: "validTo",
+        label: "Valid To",
+        type: "date-range",
+        getValue: (l) => l.validTo,
+      },
+    ],
+    [services, origins, dests, carrierOpts]
+  );
 
-  // Unique origin / destination keys for explicit filter dropdowns
-  const originOptions = useMemo(() =>
-    [...new Set(lanes.map(l => `${l.origin.city}, ${l.origin.state}`))].sort()
-      .map(v => ({ value: v, label: v })),
-    []
-  );
-  const destOptions = useMemo(() =>
-    [...new Set(lanes.map(l => `${l.destination.city}, ${l.destination.state}`))].sort()
-      .map(v => ({ value: v, label: v })),
-    []
-  );
+  const searchColumns: SearchColumn[] = [
+    { id: "ref", label: "Ref" },
+    { id: "carrier", label: "Carrier" },
+    { id: "service", label: "Service Type" },
+    { id: "origin", label: "Origin" },
+    { id: "destination", label: "Destination" },
+  ];
+  const searchable = [
+    { id: "ref", getText: (l: EnrichedLane) => l.ref },
+    { id: "carrier", getText: (l: EnrichedLane) => `${l.carrier?.name ?? ""} ${l.carrier?.scac ?? ""}` },
+    { id: "service", getText: (l: EnrichedLane) => l.service },
+    { id: "origin", getText: (l: EnrichedLane) => `${l.origin.city}, ${l.origin.state}` },
+    { id: "destination", getText: (l: EnrichedLane) => `${l.destination.city}, ${l.destination.state}` },
+  ];
+
+  const filtered = useMemo(() => {
+    let rows: EnrichedLane[] = enriched;
+    rows = applySearch(rows, search, searchCols, searchable);
+    rows = applyQuickFilters(rows, fields, quick);
+    rows = applyAdvancedRules(rows, fields, advanced);
+    return rows.sort(
+      (a, b) => new Date(a.validTo).getTime() - new Date(b.validTo).getTime()
+    );
+  }, [enriched, search, searchCols, quick, advanced, fields]);
+
+  useEffect(() => setPage(1), [search, searchCols, quick, advanced]);
+
+  const start = (page - 1) * pageSize;
+  const visible = filtered.slice(start, start + pageSize);
 
   function toggleDeactivate(laneId: string) {
-    setDeactivated(prev => {
+    setDeactivated((prev) => {
       const next = new Set(prev);
       next.has(laneId) ? next.delete(laneId) : next.add(laneId);
       return next;
     });
   }
 
-  const moreFiltersActiveCount = modeFilters.size + serviceFilters.size + statusFilters.size;
+  return {
+    fields,
+    searchColumns,
+    search,
+    setSearch,
+    searchCols,
+    setSearchCols,
+    quick,
+    setQuick,
+    advanced,
+    setAdvanced,
+    visible,
+    total: filtered.length,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    toggleDeactivate,
+  };
+}
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return lanes
-      .map(lane => {
-        const carrier = carrierMap.get(lane.id);
-        const effectiveStatus: "ACTIVE" | "INACTIVE" = deactivated.has(lane.id) ? "INACTIVE" : lane.status;
-        return { ...lane, carrier, effectiveStatus };
-      })
-      .filter(lane => {
-        // Text search: ref, carrier name/SCAC, service type
-        if (q && ![
-          lane.ref,
-          lane.carrier?.name ?? "",
-          lane.carrier?.scac ?? "",
-          lane.service,
-        ].some(v => v.toLowerCase().includes(q))) return false;
-
-        const originKey = `${lane.origin.city}, ${lane.origin.state}`;
-        const destKey   = `${lane.destination.city}, ${lane.destination.state}`;
-
-        if (originFilters.size  > 0 && !originFilters.has(originKey))                  return false;
-        if (destFilters.size    > 0 && !destFilters.has(destKey))                      return false;
-        if (carrierFilters.size > 0 && !carrierFilters.has(lane.carrier?.id ?? ""))    return false;
-        if (modeFilters.size    > 0 && !modeFilters.has(lane.mode))                    return false;
-        if (serviceFilters.size > 0 && !serviceFilters.has(lane.service))              return false;
-        if (statusFilters.size  > 0 && !statusFilters.has(lane.effectiveStatus))       return false;
-
-        const days = daysUntil(lane.validTo);
-        if (validityFilter === "30d"     && (days < 0 || days > 30)) return false;
-        if (validityFilter === "60d"     && (days < 0 || days > 60)) return false;
-        if (validityFilter === "expired" && days >= 0)                return false;
-
-        return true;
-      })
-      .sort((a, b) => new Date(a.validTo).getTime() - new Date(b.validTo).getTime());
-  }, [search, originFilters, destFilters, carrierFilters, modeFilters, serviceFilters, statusFilters, validityFilter, deactivated, carrierMap]);
-
-  const hasActiveFilters =
-    search || originFilters.size > 0 || destFilters.size > 0 ||
-    carrierFilters.size > 0 || validityFilter !== "all" || moreFiltersActiveCount > 0;
-
+// ─── Carrier table (rendered area only) ───────────────────────────────────────
+function CarriersTable({ rows }: { rows: Carrier[] }) {
+  const navigate = useNavigate();
   return (
-    <div className="space-y-3">
-
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2">
-
-        {/* Text search (ref · carrier · service type) */}
-        <div className="relative min-w-48 flex-1">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search ref, carrier, service type…"
-            className="pl-8 text-sm bg-slate-50 border-slate-200 focus:bg-white"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              <X size={13} />
-            </button>
-          )}
-        </div>
-
-        {/* Origin */}
-        <MultiSelectDropdown
-          label="Origin"
-          options={originOptions}
-          selected={originFilters}
-          onToggle={toggle(setOriginFilters)}
-          onClear={() => setOriginFilters(new Set())}
-        />
-
-        {/* Destination */}
-        <MultiSelectDropdown
-          label="Destination"
-          options={destOptions}
-          selected={destFilters}
-          onToggle={toggle(setDestFilters)}
-          onClear={() => setDestFilters(new Set())}
-        />
-
-        {/* Carrier — searchable for long lists */}
-        <MultiSelectDropdown
-          label="Carrier"
-          options={laneCarriers.map(c => ({ value: c.id, label: c.name }))}
-          selected={carrierFilters}
-          onToggle={toggle(setCarrierFilters)}
-          onClear={() => setCarrierFilters(new Set())}
-          searchable
-        />
-
-        {/* Expiry */}
-        <ExpiryFilter value={validityFilter} onChange={setValidityFilter} />
-
-        {/* More: Mode · Service Type · Status */}
-        <MoreFilters
-          modeFilters={modeFilters}
-          serviceFilters={serviceFilters}
-          statusFilters={statusFilters}
-          serviceTypes={serviceTypes}
-          activeCount={moreFiltersActiveCount}
-          onToggleMode={toggle(setModeFilters)}
-          onToggleService={toggle(setServiceFilters)}
-          onToggleStatus={toggle(setStatusFilters)}
-          onClear={() => { setModeFilters(new Set()); setServiceFilters(new Set()); setStatusFilters(new Set()); }}
-        />
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <span className="text-xs text-slate-500">
-            {filtered.length} lane{filtered.length !== 1 ? "s" : ""}
-            {hasActiveFilters && " matching filters"}
-          </span>
-          <span className="text-xs text-slate-400">Sorted by earliest expiry</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50">
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Origin</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Destination</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Carrier</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Mode</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Service Type</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Ref</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Validity</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
-                <th className="w-4" />
+    <table className="min-w-full text-sm">
+      <thead className="sticky top-0 bg-white z-10">
+        <tr className="border-y border-slate-200">
+          <th className="text-left px-4 py-3 min-w-[120px]"><ColHeader>SCAC</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[260px]"><ColHeader>Carrier Name</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[200px]"><ColHeader>Mode</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[180px]"><ColHeader>Active Lanes</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[240px]"><ColHeader>Last Updated by</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[200px]"><ColHeader>Last Updated at</ColHeader></th>
+          <th className="w-12" />
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={7} className="px-4 py-12 text-center text-sm text-slate-400">
+              No carriers match the current filters
+            </td>
+          </tr>
+        ) : (
+          rows.map((c) => {
+            const user = userForCarrier(c.id);
+            return (
+              <tr
+                key={c.id}
+                onClick={() => navigate(`/contracts/${c.id}`)}
+                className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors cursor-pointer"
+              >
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className="text-sm font-medium text-slate-950">{c.scac}</span>
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-900 whitespace-nowrap">{c.name}</td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {c.modes.map((m) => <ModeBadge key={m} mode={m} />)}
+                  </div>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className="text-sm text-slate-900">{c.activeLanes}</span>{" "}
+                  <span className="text-xs text-slate-500">out of {c.totalLanes}</span>
+                </td>
+                <td className="px-4 py-3"><UserCell user={user} /></td>
+                <td className="px-4 py-3 text-sm text-slate-900 whitespace-nowrap">{fmtLong(c.lastUpdated)}</td>
+                <td className="px-4 py-3" />
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-400">
-                    No lanes match the current filters
-                  </td>
-                </tr>
-              ) : filtered.map(lane => {
-                const isActive = lane.effectiveStatus === "ACTIVE";
-                return (
-                  <tr key={lane.id} className={cn("group transition-colors", isActive ? "hover:bg-slate-50/40" : "bg-slate-50/30 opacity-60 hover:opacity-100")}>
-                    <td className="px-4 py-3 text-xs text-slate-800 whitespace-nowrap font-medium">{lane.origin.city}, {lane.origin.state}</td>
-                    <td className="px-4 py-3 text-xs text-slate-800 whitespace-nowrap">{lane.destination.city}, {lane.destination.state}</td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs font-medium text-slate-800 block">{lane.carrier?.name ?? "—"}</span>
-                      <span className="font-mono text-[11px] text-slate-400">{lane.carrier?.scac}</span>
-                    </td>
-                    <td className="px-4 py-3"><ModeBadge mode={lane.mode} /></td>
-                    <td className="px-4 py-3 text-xs text-slate-700 whitespace-nowrap">{lane.service}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{lane.ref}</td>
-                    <td className="px-4 py-3"><ValidityCell validFrom={lane.validFrom} validTo={lane.validTo} /></td>
-                    <td className="px-4 py-3"><StatusBadge status={lane.effectiveStatus} /></td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => toggleDeactivate(lane.id)}
-                        className={cn(
-                          "px-2.5 py-1 text-[11px] font-medium rounded border transition-all whitespace-nowrap opacity-0 group-hover:opacity-100",
-                          isActive
-                            ? "border-slate-200 text-slate-500 hover:border-red-200 hover:text-red-600 hover:bg-red-50"
-                            : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                        )}
-                      >
-                        {isActive ? "Deactivate" : "Reactivate"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            );
+          })
+        )}
+      </tbody>
+    </table>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
-type ViewMode = "carriers" | "lanes";
-
-export default function ContractsPage() {
-  const [viewMode, setViewMode]     = useState<ViewMode>("carriers");
-  const [modeFilter, setModeFilter] = useState("all");
-
-  const filteredCarriers = useMemo(() =>
-    carriers.filter(c => modeFilter === "all" || c.modes.includes(modeFilter as any)),
-    [modeFilter]
+// ─── Lanes table (rendered area only) ─────────────────────────────────────────
+function LanesTable({
+  rows,
+  onToggleDeactivate,
+}: {
+  rows: ReturnType<typeof useLanesTable>["visible"];
+  onToggleDeactivate: (id: string) => void;
+}) {
+  return (
+    <table className="min-w-full text-sm">
+      <thead className="sticky top-0 bg-white z-10">
+        <tr className="border-y border-slate-200">
+          <th className="text-left px-4 py-3 min-w-[160px]"><ColHeader>Origin</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[160px]"><ColHeader>Destination</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[200px]"><ColHeader>Carrier</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[100px]"><ColHeader>Mode</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[140px]"><ColHeader>Service Type</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[160px]"><ColHeader>Ref</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[200px]"><ColHeader>Validity</ColHeader></th>
+          <th className="text-left px-4 py-3 min-w-[120px]"><ColHeader>Status</ColHeader></th>
+          <th className="w-32" />
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={9} className="px-4 py-12 text-center text-sm text-slate-400">
+              No lanes match the current filters
+            </td>
+          </tr>
+        ) : (
+          rows.map((lane) => {
+            const isActive = lane.effectiveStatus === "ACTIVE";
+            return (
+              <tr
+                key={lane.id}
+                className={cn(
+                  "group transition-colors border-b border-slate-100",
+                  isActive
+                    ? "hover:bg-slate-50/40"
+                    : "bg-slate-50/30 opacity-60 hover:opacity-100"
+                )}
+              >
+                <td className="px-4 py-3 text-sm text-slate-900 whitespace-nowrap font-medium">
+                  {lane.origin.city}, {lane.origin.state}
+                </td>
+                <td className="px-4 py-3 text-sm text-slate-900 whitespace-nowrap">
+                  {lane.destination.city}, {lane.destination.state}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className="text-sm text-slate-900 block">{lane.carrier?.name ?? "—"}</span>
+                  <span className="font-mono text-[11px] text-slate-400">{lane.carrier?.scac}</span>
+                </td>
+                <td className="px-4 py-3"><ModeBadge mode={lane.mode} /></td>
+                <td className="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">{lane.service}</td>
+                <td className="px-4 py-3 font-mono text-xs text-slate-500 whitespace-nowrap">{lane.ref}</td>
+                <td className="px-4 py-3"><ValidityCell validFrom={lane.validFrom} validTo={lane.validTo} /></td>
+                <td className="px-4 py-3"><StatusBadge status={lane.effectiveStatus} /></td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => onToggleDeactivate(lane.id)}
+                    className={cn(
+                      "px-2.5 py-1 text-[11px] font-medium rounded border transition-all whitespace-nowrap opacity-0 group-hover:opacity-100",
+                      isActive
+                        ? "border-slate-200 text-slate-500 hover:border-red-200 hover:text-red-600 hover:bg-red-50"
+                        : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    )}
+                  >
+                    {isActive ? "Deactivate" : "Reactivate"}
+                  </button>
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
   );
+}
 
-  const tabs: { id: ViewMode; label: string }[] = [
-    { id: "carriers", label: "By Carrier" },
-    { id: "lanes",    label: "By Lane"    },
-  ];
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default function ContractsPage() {
+  const [tab, setTab] = useState<"carriers" | "lanes">("carriers");
+  const carrier = useCarrierTable();
+  const laneState = useLanesTable();
+  const active = tab === "carriers" ? carrier : laneState;
 
   return (
-    <div className="min-h-full">
-      {/* Page header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-slate-950">Contracts</h1>
-            <p className="text-sm text-slate-500 mt-0.5">{carriers.length} carriers · {lanes.length} lanes</p>
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <UploadHistorySheet />
-            <Button size="sm" className="gap-1.5">
-              <Upload size={14} /> Upload Contract
-            </Button>
-          </div>
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex items-center gap-0 mt-4 -mb-4">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setViewMode(tab.id)}
-              className={cn(
-                "px-4 py-2.5 text-sm border-b-2 transition-colors",
-                viewMode === tab.id
-                  ? "border-primary text-primary font-medium"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-6 py-5">
-        {viewMode === "lanes" ? (
-          <LanesTab />
-        ) : (
-          <>
-            {/* Carrier filter */}
-            <div className="flex items-center gap-2 mb-4">
-              <select
-                value={modeFilter}
-                onChange={e => setModeFilter(e.target.value)}
-                className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
+    <div className="h-full flex flex-col py-2 pr-2">
+      <div className="bg-white rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col flex-1 overflow-hidden">
+        <DataTableHeader
+          title="Contracts"
+          description="Vendor agreements, rate cards, and active lanes. Upload a new contract or review extraction status across jobs."
+          actions={
+            <>
+              <UploadHistorySheet />
+              <Button
+                size="sm"
+                className="bg-slate-900 hover:bg-slate-800 text-white gap-1.5"
               >
-                <option value="all">All Modes</option>
-                <option value="LTL">LTL</option>
-                <option value="FTL">FTL</option>
-                <option value="ROAD">Road</option>
-                <option value="AIR">Air</option>
-                <option value="OCEAN">Ocean</option>
-              </select>
-            </div>
+                <Upload size={14} /> Upload
+              </Button>
+            </>
+          }
+        />
 
-            {/* Carrier list */}
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-              <div className="flex items-center px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-                <span className="flex-1 text-xs font-medium text-slate-500 uppercase tracking-wide">Carrier</span>
-                <div className="hidden md:flex items-center gap-8 mr-4">
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-20 text-right">Active Lanes</span>
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-20 text-right">Total Lanes</span>
-                  <span className="text-xs font-medium text-slate-500 uppercase tracking-wide w-24 text-right">Last Updated</span>
-                </div>
-              </div>
-              {filteredCarriers.map(carrier => <CarrierRow key={carrier.id} carrier={carrier} />)}
-              {filteredCarriers.length === 0 && (
-                <div className="px-5 py-10 text-center text-sm text-slate-400">No carriers match these filters</div>
-              )}
-            </div>
-          </>
-        )}
+        {/* Tab | Search | Filter — single row, left-aligned, contiguous */}
+        <div className="px-5 pt-1 pb-3 flex items-center gap-2 flex-wrap">
+          <DataTableTabs
+            tabs={[
+              { id: "carriers", label: "Carrier", count: carriers.length },
+              { id: "lanes", label: "Lanes", count: lanes.length },
+            ]}
+            value={tab}
+            onChange={(id) => setTab(id as "carriers" | "lanes")}
+          />
+          <SearchWithColumnPicker
+            query={active.search}
+            onQueryChange={active.setSearch}
+            placeholder={tab === "carriers" ? "Search vendor" : "Search ref, carrier, service…"}
+            columns={active.searchColumns}
+            selectedColumns={active.searchCols}
+            onSelectedColumnsChange={active.setSearchCols}
+          />
+          <QuickFiltersPopover
+            fields={active.fields as FilterFieldDef<unknown>[]}
+            values={active.quick}
+            rules={active.advanced}
+            onApply={({ values, rules }) => {
+              active.setQuick(values);
+              active.setAdvanced(rules);
+            }}
+          />
+        </div>
+
+        {/* Active filter chips */}
+        <FilterChipsBar
+          fields={active.fields as FilterFieldDef<unknown>[]}
+          values={active.quick}
+          rules={active.advanced}
+          onChangeValues={active.setQuick}
+          onChangeRules={active.setAdvanced}
+        />
+
+        {/* Table region — scrolls vertically AND horizontally */}
+        <div className="flex-1 overflow-auto px-4">
+          {tab === "carriers" ? (
+            <CarriersTable rows={carrier.visible} />
+          ) : (
+            <LanesTable rows={laneState.visible} onToggleDeactivate={laneState.toggleDeactivate} />
+          )}
+        </div>
+
+        <PaginationFooter
+          total={active.total}
+          page={active.page}
+          pageSize={active.pageSize}
+          onPage={active.setPage}
+          onPageSize={(s) => {
+            active.setPageSize(s);
+            active.setPage(1);
+          }}
+        />
       </div>
     </div>
   );
