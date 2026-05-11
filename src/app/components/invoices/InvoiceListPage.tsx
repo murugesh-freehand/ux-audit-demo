@@ -1,13 +1,15 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router";
 import {
   Upload, Filter, ChevronRight, Clock, ChevronDown, X,
-  FileText, CheckCircle2, AlertCircle, RefreshCw,
+  FileText, CheckCircle2, AlertCircle, RefreshCw, Search,
 } from "lucide-react";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
+import { cn } from "../ui/utils";
 import { invoices, type Invoice, type InvoiceStatus, type AuditStatus } from "../../data/mockData";
 
 const PROCESSING_JOBS = 71;
@@ -147,6 +149,125 @@ function ProcessingSheet({
   );
 }
 
+// ─── Vendor Dropdown ─────────────────────────────────────────────────────────
+
+function useClickOutside(cb: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function h(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) cb();
+    }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [cb]);
+  return ref;
+}
+
+function VendorDropdown({
+  vendors, selected, onToggle, onClear,
+}: {
+  vendors: string[]; selected: Set<string>;
+  onToggle: (v: string) => void; onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useClickOutside(() => setOpen(false));
+
+  const displayed = q.trim()
+    ? vendors.filter(v => v.toLowerCase().includes(q.trim().toLowerCase()))
+    : vendors.slice(0, 10);
+  const hasMore = !q.trim() && vendors.length > 10;
+
+  const label = selected.size === 0
+    ? "All Vendors"
+    : selected.size === 1
+      ? [...selected][0]
+      : `${selected.size} vendors`;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className={cn(
+          "flex items-center gap-1.5 text-sm border rounded-md px-3 py-1.5 bg-white transition-colors whitespace-nowrap",
+          selected.size > 0
+            ? "border-primary text-primary bg-orange-50"
+            : "border-slate-200 text-slate-700 hover:border-slate-300"
+        )}
+      >
+        {label}
+        {selected.size > 0 && (
+          <span className="inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] w-4 h-4 font-medium leading-none">
+            {selected.size}
+          </span>
+        )}
+        <ChevronDown size={12} className={cn("text-slate-400 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg border border-slate-200 shadow-lg z-20 overflow-hidden">
+          <div className="p-2 border-b border-slate-100">
+            <div className="relative">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                autoFocus
+                value={q}
+                onChange={e => setQ(e.target.value)}
+                placeholder="Search vendors…"
+                className="w-full text-sm pl-7 pr-3 py-1.5 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="p-1.5 space-y-0.5 max-h-52 overflow-y-auto">
+            {displayed.length === 0 ? (
+              <p className="text-xs text-slate-400 px-2 py-2 text-center">No results</p>
+            ) : displayed.map(vendor => (
+              <label key={vendor} className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-slate-50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={selected.has(vendor)}
+                  onChange={() => onToggle(vendor)}
+                  className="accent-primary w-3.5 h-3.5 shrink-0"
+                />
+                <span className="text-sm text-slate-700 truncate">{vendor}</span>
+              </label>
+            ))}
+            {hasMore && (
+              <p className="text-xs text-slate-400 px-2 py-1.5 text-center italic">
+                +{vendors.length - 10} more — type to search
+              </p>
+            )}
+          </div>
+
+          {selected.size > 0 && (
+            <div className="px-3 py-2 border-t border-slate-100">
+              <button onClick={onClear} className="text-[11px] text-slate-400 hover:text-primary transition-colors">
+                Clear selection
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Highlight ───────────────────────────────────────────────────────────────
+
+function Highlight({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-amber-100 text-amber-900 rounded-sm px-0.5 not-italic">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
 // ─── Audit badge ──────────────────────────────────────────────────────────────
 
 function AuditBadge({ status }: { status: AuditStatus }) {
@@ -231,7 +352,7 @@ function MoreFiltersPopover({
 
 // ─── Invoice Row ──────────────────────────────────────────────────────────────
 
-function InvoiceRow({ invoice }: { invoice: Invoice }) {
+function InvoiceRow({ invoice, query }: { invoice: Invoice; query: string }) {
   return (
     <Link
       to={`/invoices/${invoice.id}`}
@@ -239,20 +360,23 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-950">{invoice.ref}</span>
+          <span className="text-sm font-medium text-slate-950">
+            <Highlight text={invoice.ref} query={query} />
+          </span>
           <StatusBadge status={invoice.status} />
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-xs text-slate-400">{invoice.vendor}</span>
+          <span className="text-xs text-slate-400">
+            <Highlight text={invoice.vendor} query={query} />
+          </span>
           <span className="text-slate-200">·</span>
           <ModeBadge mode={invoice.mode} />
           <span className="text-xs text-slate-400">{invoice.type}</span>
-          {/* Route — subtle, same line as metadata */}
           <span className="text-slate-200">·</span>
           <span className="text-xs text-slate-400 flex items-center gap-1">
-            {invoice.origin.city}, {invoice.origin.state}
+            <Highlight text={`${invoice.origin.city}, ${invoice.origin.state}`} query={query} />
             <span className="text-slate-300 mx-0.5">→</span>
-            {invoice.destination.city}, {invoice.destination.state}
+            <Highlight text={`${invoice.destination.city}, ${invoice.destination.state}`} query={query} />
           </span>
         </div>
       </div>
@@ -285,14 +409,20 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function InvoiceListPage() {
-  const [vendorFilter, setVendorFilter] = useState("all");
+  const [search, setSearch]             = useState("");
+  const [vendorFilters, setVendorFilters] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState("all");
-  const [moreFilters, setMoreFilters] = useState<MoreFilters>({
+  const [moreFilters, setMoreFilters]   = useState<MoreFilters>({
     type: "all", mode: "all", currency: "all", auditStatus: "all",
   });
   const [processingOpen, setProcessingOpen] = useState(false);
 
-  const allVendors = [...new Set(invoices.map((i) => i.vendor))].sort();
+  // Vendors sorted by invoice frequency (most common first)
+  const allVendors = useMemo(() => {
+    const counts = new Map<string, number>();
+    invoices.forEach(inv => counts.set(inv.vendor, (counts.get(inv.vendor) ?? 0) + 1));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v);
+  }, []);
 
   const moreActiveCount = [
     moreFilters.type !== "all",
@@ -302,8 +432,13 @@ export default function InvoiceListPage() {
   ].filter(Boolean).length;
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return invoices.filter((inv) => {
-      if (vendorFilter !== "all" && inv.vendor !== vendorFilter) return false;
+      if (q) {
+        const route = `${inv.origin.city}, ${inv.origin.state} ${inv.destination.city}, ${inv.destination.state}`;
+        if (![inv.ref, inv.vendor, route].some(v => v.toLowerCase().includes(q))) return false;
+      }
+      if (vendorFilters.size > 0 && !vendorFilters.has(inv.vendor)) return false;
       if (statusFilter !== "all" && inv.status !== statusFilter) return false;
       if (moreFilters.type !== "all" && inv.type !== moreFilters.type) return false;
       if (moreFilters.mode !== "all" && inv.mode !== moreFilters.mode) return false;
@@ -311,15 +446,24 @@ export default function InvoiceListPage() {
       if (moreFilters.auditStatus !== "all" && inv.auditStatus !== moreFilters.auditStatus) return false;
       return true;
     });
-  }, [vendorFilter, statusFilter, moreFilters]);
+  }, [search, vendorFilters, statusFilter, moreFilters]);
+
+  function toggleVendor(v: string) {
+    setVendorFilters(prev => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
+  }
 
   const resetAll = () => {
-    setVendorFilter("all");
+    setSearch("");
+    setVendorFilters(new Set());
     setStatusFilter("all");
     setMoreFilters({ type: "all", mode: "all", currency: "all", auditStatus: "all" });
   };
 
-  const hasAnyFilter = vendorFilter !== "all" || statusFilter !== "all" || moreActiveCount > 0;
+  const hasAnyFilter = !!search || vendorFilters.size > 0 || statusFilter !== "all" || moreActiveCount > 0;
 
   return (
     <div className="min-h-full">
@@ -346,18 +490,30 @@ export default function InvoiceListPage() {
           </Button>
         </div>
 
-        {/* Inline filters */}
-        <div className="flex items-center gap-2 mt-4">
-          <select
-            value={vendorFilter}
-            onChange={(e) => setVendorFilter(e.target.value)}
-            className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 focus:border-ring"
-          >
-            <option value="all">All Vendors</option>
-            {allVendors.map((v) => (
-              <option key={v} value={v}>{v}</option>
-            ))}
-          </select>
+        {/* Search + filters */}
+        <div className="flex items-center gap-2 mt-4 flex-wrap">
+          {/* Search */}
+          <div className="relative min-w-56 flex-1 max-w-sm">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search invoice #, vendor, route…"
+              className="pl-8 text-sm bg-slate-50 border-slate-200 focus:bg-white"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          <VendorDropdown
+            vendors={allVendors}
+            selected={vendorFilters}
+            onToggle={toggleVendor}
+            onClear={() => setVendorFilters(new Set())}
+          />
 
           <select
             value={statusFilter}
@@ -409,7 +565,7 @@ export default function InvoiceListPage() {
               No invoices match these filters
             </div>
           ) : (
-            filtered.map((invoice) => <InvoiceRow key={invoice.id} invoice={invoice} />)
+            filtered.map((invoice) => <InvoiceRow key={invoice.id} invoice={invoice} query={search.trim()} />)
           )}
         </div>
       </div>
