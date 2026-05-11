@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "./ui/utils";
+import { Toaster } from "./ui/sonner";
 
 const PROCESSING_JOBS_COUNT = 71;
 
@@ -261,6 +262,8 @@ export default function Layout() {
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
+
+      <Toaster position="bottom-right" richColors />
     </div>
   );
 }

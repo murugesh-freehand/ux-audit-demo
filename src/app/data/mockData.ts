@@ -3,7 +3,7 @@ export type CarrierStatus = 'ACTIVE' | 'PENDING' | 'INACTIVE';
 export type ContractStatus = 'ACTIVE' | 'EXPIRED' | 'PENDING' | 'SUPERSEDED';
 export type InvoiceStatus = 'APPROVED' | 'INCOMPLETE' | 'HELD' | 'REJECTED' | 'COMPLETED' | 'PENDING';
 export type AuditStatus = 'PASS' | 'FAIL' | 'WARNING' | 'PENDING';
-export type UploadJobStatus = 'COMPLETED' | 'PROCESSING' | 'FAILED' | 'PARTIAL';
+export type UploadJobStatus = 'COMPLETED' | 'PROCESSING' | 'FAILED' | 'PARTIAL' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface Carrier {
   id: string;
@@ -123,9 +123,21 @@ export interface InvoiceLineItem {
   status: 'PASS' | 'FAIL' | 'WARNING';
 }
 
+export interface JobContractDetails {
+  name: string;
+  tags: string[];
+  validFrom: string;
+  validTo: string;
+  pricingCount: number;
+  lanesCount: number;
+  terms: string[];
+}
+
 export interface UploadJob {
   id: string;
   ref: string;
+  carrierId: string;
+  carrierName: string;
   scac: string;
   mode: Mode;
   status: UploadJobStatus;
@@ -133,6 +145,7 @@ export interface UploadJob {
   rates: number;
   files: string[];
   uploadedAt: string;
+  contractDetails?: JobContractDetails;
 }
 
 // ─── CARRIERS ────────────────────────────────────────────────────────────────
@@ -457,11 +470,70 @@ export const chargeDefinitions: ChargeDefinition[] = [
 // ─── UPLOAD JOBS ──────────────────────────────────────────────────────────────
 
 export const uploadJobs: UploadJob[] = [
-  { id: 'uj1', ref: 'CJ-20260505054956-43B1A1', scac: 'AVRT', mode: 'LTL', status: 'COMPLETED', progress: 100, rates: 550, files: ['AVRT_2026_LTL_Base.pdf', 'AVRT_2026_Amendment_1.pdf'], uploadedAt: '2026-05-05T05:49:56Z' },
-  { id: 'uj2', ref: 'CJ-20260430120211-9E2F44', scac: 'FXFE', mode: 'LTL', status: 'COMPLETED', progress: 100, rates: 820, files: ['FXFE_2026_National.pdf'], uploadedAt: '2026-04-30T12:02:11Z' },
-  { id: 'uj3', ref: 'CJ-20260425183344-C7A019', scac: 'CEVA', mode: 'ROAD', status: 'PARTIAL', progress: 78, rates: 226, files: ['CEVA_Road_2025-2026.pdf', 'CEVA_Air_2025.pdf', 'CEVA_Addendum.xlsx'], uploadedAt: '2026-04-25T18:33:44Z' },
-  { id: 'uj4', ref: 'CJ-20260422091722-BB8812', scac: 'XPOL', mode: 'LTL', status: 'PROCESSING', progress: 45, rates: 198, files: ['XPOL_2026_LTL.pdf'], uploadedAt: '2026-04-22T09:17:22Z' },
-  { id: 'uj5', ref: 'CJ-20260414150837-D3901C', scac: 'EXLA', mode: 'LTL', status: 'FAILED', progress: 0, rates: 0, files: ['EXLA_2026_Draft.xlsx'], uploadedAt: '2026-04-14T15:08:37Z' },
+  // Ready to review
+  {
+    id: 'uj1', ref: 'CJ-20260511132045-A4F2B1', carrierId: 'avrt', carrierName: 'Averitt Express', scac: 'AVRT', mode: 'LTL',
+    status: 'COMPLETED', progress: 100, rates: 550, files: ['AVRT_2026_LTL_Renewal.pdf'], uploadedAt: '2026-05-11T13:20:45Z',
+    contractDetails: {
+      name: 'Averitt Express LTL National Rate Agreement 2026',
+      tags: ['FREIGHT', 'USD', 'Contracted'],
+      validFrom: '2026-01-01', validTo: '2026-12-31',
+      pricingCount: 12, lanesCount: 10,
+      terms: [
+        'FAK rules apply to all shipments 500 LB and above',
+        'Fuel surcharge pegged to DOE weekly retail diesel index',
+        'Liability cap of $25/LB applies to all lanes unless waived in writing',
+        'Payment terms Net 30 from invoice date; late fee 1.5% per month',
+        'Minimum charge per shipment: $185.00',
+      ],
+    },
+  },
+  {
+    id: 'uj2', ref: 'CJ-20260510084533-9E2F44', carrierId: 'fxfe', carrierName: 'FedEx Freight', scac: 'FXFE', mode: 'LTL',
+    status: 'COMPLETED', progress: 100, rates: 820, files: ['FXFE_2026_National.pdf', 'FXFE_2026_Amendment.pdf'], uploadedAt: '2026-05-10T08:45:33Z',
+    contractDetails: {
+      name: 'FedEx Freight LTL National Account Agreement',
+      tags: ['FREIGHT', 'USD', 'Contracted'],
+      validFrom: '2026-01-01', validTo: '2026-12-31',
+      pricingCount: 18, lanesCount: 0,
+      terms: [
+        'Base rates derived from FedEx 2025 tariff with negotiated discount applied',
+        'No accessorial charges waived — all standard accessorials apply at tariff rate',
+        'Fuel surcharge applied weekly per published FedEx FSC schedule',
+        'Amendment file overrides base rate for Priority lanes only',
+        'Parser: rates extracted from amendment take precedence over base file where duplicated',
+      ],
+    },
+  },
+  // In progress
+  { id: 'uj3', ref: 'CJ-20260511120011-C7A019', carrierId: 'ceva', carrierName: 'CEVA Logistics',  scac: 'CEVA', mode: 'ROAD', status: 'PROCESSING',  progress: 62,  rates: 0,   files: ['CEVA_Road_2026_RateCard.pdf'],                              uploadedAt: '2026-05-11T12:00:11Z' },
+  { id: 'uj4', ref: 'CJ-20260509091722-BB8812', carrierId: 'xpol', carrierName: 'XPO Logistics',   scac: 'XPOL', mode: 'LTL',  status: 'PARTIAL',    progress: 78,  rates: 226, files: ['XPOL_TL_Allocation_Nov25-Apr26.xlsx'],                      uploadedAt: '2026-05-09T09:17:22Z' },
+  // Failed
+  { id: 'uj5', ref: 'CJ-20260507150837-D3901C', carrierId: 'exla', carrierName: 'Estes Express',   scac: 'EXLA', mode: 'LTL',  status: 'FAILED',     progress: 0,   rates: 0,   files: ['EXLA_2026_Draft.xlsx'],                                     uploadedAt: '2026-05-07T15:08:37Z' },
+  // History
+  {
+    id: 'uj6', ref: 'CJ-20260430120211-7F1A22', carrierId: 'avrt', carrierName: 'Averitt Express', scac: 'AVRT', mode: 'LTL',
+    status: 'APPROVED', progress: 100, rates: 312, files: ['AVRT_2025_LTL_Base.pdf'], uploadedAt: '2026-04-30T12:02:11Z',
+    contractDetails: {
+      name: 'Averitt Express LTL Base Rate Agreement 2025',
+      tags: ['FREIGHT', 'USD', 'Contracted'],
+      validFrom: '2025-01-01', validTo: '2025-12-31',
+      pricingCount: 8, lanesCount: 10,
+      terms: ['Prior year base rate — superseded by 2026 renewal'],
+    },
+  },
+  {
+    id: 'uj7', ref: 'CJ-20260425183344-E8B209', carrierId: 'ceva', carrierName: 'CEVA Logistics', scac: 'CEVA', mode: 'ROAD',
+    status: 'REJECTED', progress: 100, rates: 0, files: ['CEVA_Road_2025_v2.pdf'], uploadedAt: '2026-04-25T18:33:44Z',
+    contractDetails: {
+      name: 'CEVA Logistics Road Rate Card 2025 v2',
+      tags: ['FREIGHT', 'USD', 'Contracted'],
+      validFrom: '2025-07-01', validTo: '2026-06-30',
+      pricingCount: 0, lanesCount: 0,
+      terms: [],
+    },
+  },
+  { id: 'uj8', ref: 'CJ-20260422091722-BB3312', carrierId: 'xpol', carrierName: 'XPO Logistics',   scac: 'XPOL', mode: 'LTL',  status: 'CANCELLED',  progress: 0,   rates: 0,   files: ['XPOL_2026_Brokerage_Draft.xlsx'],                           uploadedAt: '2026-04-22T09:17:22Z' },
 ];
 
 // ─── INVOICES ─────────────────────────────────────────────────────────────────

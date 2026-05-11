@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import HomePage from "./components/home/HomePage";
 import ContractsPage from "./components/contracts/ContractsPage";
 import CarrierDetailPage from "./components/contracts/CarrierDetailPage";
+import ContractJobDetailPage from "./components/contracts/ContractJobDetailPage";
 import InvoiceListPage from "./components/invoices/InvoiceListPage";
 import InvoiceDetailPage from "./components/invoices/InvoiceDetailPage";
 import InvoiceAuditPage from "./components/invoices/InvoiceAuditPage";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
 
       // Contracts
       { path: "contracts",                         Component: ContractsPage },
+      { path: "contracts/jobs/:jobId",              Component: ContractJobDetailPage },
       { path: "contracts/:carrierId",              Component: CarrierDetailPage },
 
       // Invoice Audit
