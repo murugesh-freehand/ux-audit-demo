@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import {
   ChevronRight, Plus, Search, Globe, ArrowLeft, X,
   AlertTriangle, XCircle, Clock, Trash2, Edit2, ChevronDown, Check,
@@ -11,6 +11,7 @@ import {
   MODES, SERVICE_TYPES_BY_MODE, FAILURE_ACTIONS,
   type VendorPolicy, type AgentDirective, type ModeServiceScope, type FailureAction,
 } from "../../data/agentsData";
+import { FAILURE_ACTION_CFG } from "../shared/statusConfig";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -29,12 +30,6 @@ function scopeLabel(scope: ModeServiceScope[]): string {
     .join(" | ");
 }
 
-const FAILURE_ACTION_STYLES: Record<FailureAction, string> = {
-  FLAG:   "bg-amber-50 text-amber-700 border-amber-200",
-  WARN:   "bg-blue-50 text-blue-700 border-blue-200",
-  HOLD:   "bg-orange-50 text-orange-700 border-orange-200",
-  REJECT: "bg-red-50 text-red-700 border-red-200",
-};
 
 const FAILURE_ACTION_ICON: Record<FailureAction, React.ElementType> = {
   FLAG:   AlertTriangle,
@@ -588,7 +583,7 @@ function DirectiveRow({ directive }: { directive: AgentDirective }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-slate-950">{directive.name}</span>
-            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[11px] font-medium ${FAILURE_ACTION_STYLES[directive.failureAction]}`}>
+            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[11px] font-medium ${FAILURE_ACTION_CFG[directive.failureAction].badgeCls}`}>
               <Icon size={10} />
               {fa?.label}
             </span>
@@ -628,6 +623,7 @@ function DirectiveRow({ directive }: { directive: AgentDirective }) {
 
 export default function AuditAgentPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const agent = agents.find(a => a.slug === slug) ?? agents.find(a => a.slug === "audit-agent");
 
   const [policies, setPolicies] = useState(initialPolicies);
@@ -679,11 +675,13 @@ export default function AuditAgentPage() {
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/agents" className="hover:text-slate-600 transition-colors">Agents</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-600">{agent?.name ?? "Audit Agent"}</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          Agents
+        </button>
 
         <div className="flex items-start justify-between">
           <div>

@@ -7,29 +7,16 @@ import {
 import { Button } from "../ui/button";
 import {
   exceptions,
+  chargeName,
   type AuditException,
   type ExceptionCode,
   type ExceptionStatus,
 } from "../../data/exceptionsData";
+import { EXCEPTION_CODE_META, EXCEPTION_STATUS_CFG } from "../shared/statusConfig";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const DEMO_TODAY = new Date("2026-05-11");
-
-const CODE_META: Record<ExceptionCode, { label: string; badgeCls: string; dotCls: string }> = {
-  RATE_UNAVAILABLE:   { label: "Rate Unavailable",   badgeCls: "bg-red-50 text-red-700 border-red-200",          dotCls: "bg-red-400"    },
-  CROSS_DOC_MISMATCH: { label: "Cross-Doc Mismatch", badgeCls: "bg-amber-50 text-amber-700 border-amber-200",    dotCls: "bg-amber-400"  },
-  BUSINESS_RULE:      { label: "Business Rule",      badgeCls: "bg-blue-50 text-blue-700 border-blue-200",       dotCls: "bg-blue-400"   },
-  LANE_NOT_FOUND:     { label: "Lane Not Found",     badgeCls: "bg-purple-50 text-purple-700 border-purple-200", dotCls: "bg-purple-400" },
-  DUPLICATE_CHARGE:   { label: "Duplicate Charge",   badgeCls: "bg-orange-50 text-orange-700 border-orange-200", dotCls: "bg-orange-400" },
-};
-
-const STATUS_CLS: Record<ExceptionStatus, string> = {
-  OPEN:     "bg-red-50 text-red-700 border-red-200",
-  RESOLVED: "bg-green-50 text-green-700 border-green-200",
-  ACCEPTED: "bg-slate-100 text-slate-600 border-slate-200",
-  DISPUTED: "bg-amber-50 text-amber-700 border-amber-200",
-};
 
 const usd = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", signDisplay: "exceptZero" }).format(n);
@@ -63,7 +50,7 @@ const COLUMN_DEFS: ColumnDef[] = [
   { id: "variance",         label: "Variance",                               defaultVisible: true,  group: "core"    },
   { id: "date",             label: "Date",                                   defaultVisible: true,  group: "core"    },
   { id: "scac",             label: "SCAC",                                   defaultVisible: false, group: "core"    },
-  { id: "chargeCode",       label: "Charge Code",                            defaultVisible: false, group: "core"    },
+  { id: "chargeCode",       label: "Charge",        alwaysVisible: true,  defaultVisible: true,  group: "core"    },
   { id: "shipmentDate",     label: "Shipment Date",                          defaultVisible: false, group: "core"    },
   { id: "billedAmount",     label: "Billed Amount",                          defaultVisible: false, group: "charges" },
   { id: "contractedAmount", label: "Contracted Amount",                      defaultVisible: false, group: "charges" },
@@ -219,7 +206,7 @@ function groupRows(
   return Array.from(map.entries()).map(([key, rows]) => ({
     key,
     label:
-      groupBy === "code"   ? CODE_META[key as ExceptionCode].label :
+      groupBy === "code"   ? EXCEPTION_CODE_META[key as ExceptionCode].label :
       groupBy === "status" ? key.charAt(0) + key.slice(1).toLowerCase() :
       key,
     rows,
@@ -893,17 +880,11 @@ function ViewsBar({ views, activeViewId, onSwitch, onCreate, onDelete }: {
 
 // ─── Status pill ───────────────────────────────────────────────────────────────
 
-const STATUS_DOT: Record<ExceptionStatus, string> = {
-  OPEN:     "bg-red-600",
-  RESOLVED: "bg-green-600",
-  ACCEPTED: "bg-slate-400",
-  DISPUTED: "bg-amber-600",
-};
-
 function StatusPill({ status }: { status: ExceptionStatus }) {
+  const cfg = EXCEPTION_STATUS_CFG[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-medium ${STATUS_CLS[status]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[status]}`} />
+    <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-medium ${cfg.badgeCls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dotCls}`} />
       {status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
@@ -913,7 +894,7 @@ function StatusPill({ status }: { status: ExceptionStatus }) {
 
 function RootCauseDrawer({ ex, onClose }: { ex: AuditException; onClose: () => void }) {
   const trace = ex.rateTrace ?? null;
-  const meta  = CODE_META[ex.code];
+  const meta  = EXCEPTION_CODE_META[ex.code];
 
   const daysInQueue = Math.floor(
     (DEMO_TODAY.getTime() - new Date(ex.shipmentDate).getTime()) / 86_400_000
@@ -1127,8 +1108,8 @@ function ExceptionTable({ rows, visibleCols, selectedIds, onToggle, onToggleAll,
             <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Invoice</th>
             {sortTh("vendor", "Vendor")}
             {show("scac") && <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">SCAC</th>}
+            <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Charge</th>
             {sortTh("code", "Type")}
-            {show("chargeCode") && <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Charge Code</th>}
             <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Description</th>
             {sortTh("status", "Status")}
             {show("resolvedBy") && <th className="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">Resolved By</th>}
@@ -1144,7 +1125,7 @@ function ExceptionTable({ rows, visibleCols, selectedIds, onToggle, onToggleAll,
           {rows.map((ex) => {
             const checked     = selectedIds.has(ex.id);
             const isAnalyzing = analyzingId === ex.id;
-            const meta        = CODE_META[ex.code];
+            const meta        = EXCEPTION_CODE_META[ex.code];
             return (
               <tr key={ex.id}
                 onClick={() => onAnalyze(ex.id)}
@@ -1169,17 +1150,12 @@ function ExceptionTable({ rows, visibleCols, selectedIds, onToggle, onToggleAll,
                     <span className="font-mono text-[11px] bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{ex.vendorScac}</span>
                   </td>
                 )}
+                <td className="px-3 py-3 text-sm text-slate-700 whitespace-nowrap">{chargeName(ex.chargeCode)}</td>
                 <td className="px-3 py-3">
                   <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${meta.badgeCls}`}>{meta.label}</span>
                 </td>
-                {show("chargeCode") && (
-                  <td className="px-3 py-3">
-                    <span className="font-mono text-[11px] bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{ex.chargeCode}</span>
-                  </td>
-                )}
                 <td className="px-3 py-3 max-w-xs">
                   <p className="text-sm text-slate-700 truncate">{ex.description}</p>
-                  {!show("chargeCode") && <span className="font-mono text-[10px] text-slate-400">{ex.chargeCode}</span>}
                 </td>
                 <td className="px-3 py-3"><StatusPill status={ex.status} /></td>
                 {show("resolvedBy") && (

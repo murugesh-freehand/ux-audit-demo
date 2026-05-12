@@ -9,6 +9,7 @@ import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
+import { PROCESSING_STATUS_CFG, type ProcessingStatus } from "../shared/statusConfig";
 import { cn } from "../ui/utils";
 import { invoices, type Invoice, type InvoiceStatus, type AuditStatus } from "../../data/mockData";
 
@@ -19,7 +20,6 @@ const usd = (n: number) =>
 
 // ─── Mock processing jobs ─────────────────────────────────────────────────────
 
-type ProcessingStatus = "COMPLETED" | "DUPLICATE" | "PROCESSING" | "FAILED";
 
 interface ProcessingJob {
   id: string;
@@ -48,11 +48,11 @@ const processingJobs: ProcessingJob[] = [
   { id: "pj-15", file: "FXFE_6178005960_EDI_Priority.txt", type: "EXTRACTION", status: "COMPLETED", durationSec: 0.1, createdAt: "2026-04-16T00:39:33Z" },
 ];
 
-const statusCfg: Record<ProcessingStatus, { label: string; cls: string; icon: React.ElementType }> = {
-  COMPLETED:  { label: "Completed",  cls: "bg-green-50 text-green-700 border-green-200",   icon: CheckCircle2 },
-  DUPLICATE:  { label: "Duplicate",  cls: "bg-amber-50 text-amber-700 border-amber-200",   icon: AlertCircle },
-  PROCESSING: { label: "Processing", cls: "bg-blue-50 text-blue-700 border-blue-200",      icon: RefreshCw },
-  FAILED:     { label: "Failed",     cls: "bg-red-50 text-red-700 border-red-200",         icon: AlertCircle },
+const statusIcon: Record<ProcessingStatus, React.ElementType> = {
+  COMPLETED:  CheckCircle2,
+  DUPLICATE:  AlertCircle,
+  PROCESSING: RefreshCw,
+  FAILED:     AlertCircle,
 };
 
 const fmtDateTime = (ts: string) =>
@@ -110,7 +110,8 @@ function ProcessingSheet({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((job) => {
-                const cfg = statusCfg[job.status];
+                const cfg = PROCESSING_STATUS_CFG[job.status];
+                const StatusIcon = statusIcon[job.status];
                 return (
                   <tr key={job.id} className="hover:bg-slate-50/40 transition-colors">
                     <td className="px-5 py-3">
@@ -123,9 +124,9 @@ function ProcessingSheet({
                       <p className="text-[10px] text-slate-400 mt-0.5 pl-5">{job.type}</p>
                     </td>
                     <td className="px-3 py-3">
-                      <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${cfg.cls}`}>
+                      <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${cfg.badgeCls}`}>
                         {job.status === "PROCESSING" ? (
-                          <cfg.icon size={10} className="animate-spin" />
+                          <StatusIcon size={10} className="animate-spin" />
                         ) : null}
                         {cfg.label}
                       </span>
@@ -271,18 +272,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 // ─── Audit badge ──────────────────────────────────────────────────────────────
 
 function AuditBadge({ status }: { status: AuditStatus }) {
-  const map: Record<AuditStatus, { label: string; cls: string }> = {
-    PASS:    { label: "Pass",    cls: "bg-green-50 text-green-700 border-green-200" },
-    FAIL:    { label: "Fail",    cls: "bg-red-50 text-red-700 border-red-200" },
-    WARNING: { label: "Warning", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    PENDING: { label: "Pending", cls: "bg-slate-50 text-slate-500 border-slate-200" },
-  };
-  const { label, cls } = map[status];
-  return (
-    <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${cls}`}>
-      {label}
-    </span>
-  );
+  return <StatusBadge status={status} />;
 }
 
 // ─── More Filters Popover ────────────────────────────────────────────────────

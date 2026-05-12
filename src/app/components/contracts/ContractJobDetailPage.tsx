@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
   ChevronRight,
@@ -9,6 +9,7 @@ import {
   Send,
   X,
   Ban,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
@@ -137,6 +138,7 @@ type DetailTab = "contract" | "pricing" | "lanes";
 
 export default function ContractJobDetailPage() {
   const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab]       = useState<DetailTab>("contract");
   const [status, setStatus]             = useState<string | null>(null);
@@ -185,13 +187,13 @@ export default function ContractJobDetailPage() {
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/contracts" className="hover:text-slate-600 transition-colors">Contracts</Link>
-          <ChevronRight size={12} />
-          <Link to="/contracts?tab=upload-history" className="hover:text-slate-600 transition-colors">Upload History</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-700 font-medium">{job.carrierName}</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          Upload History
+        </button>
 
         <div className="flex items-start justify-between">
           <div>

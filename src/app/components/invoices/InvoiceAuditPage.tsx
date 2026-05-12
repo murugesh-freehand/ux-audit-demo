@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import {
   ChevronRight, RefreshCw, CheckCircle2, AlertCircle,
   AlertTriangle, ChevronDown, ChevronRight as ChevronRightSm,
@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { invoices } from "../../data/mockData";
 import { auditRuns, type AuditRun, type AuditOverallStatus } from "../../data/auditData";
 import { exceptions } from "../../data/exceptionsData";
+import { ExceptionCodeBadge as ExCodeBadge, ExceptionStatusBadge } from "../shared/StatusBadge";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -284,23 +285,6 @@ function ContractPanel({ run }: { run: AuditRun }) {
 
 // ─── Exception code badge ──────────────────────────────────────────────────────
 
-const exCodeMeta: Record<string, { label: string; cls: string }> = {
-  RATE_UNAVAILABLE:   { label: "Rate Unavailable",   cls: "bg-red-50 text-red-700 border-red-200" },
-  CROSS_DOC_MISMATCH: { label: "Cross-Doc Mismatch", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  BUSINESS_RULE:      { label: "Business Rule",      cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  LANE_NOT_FOUND:     { label: "Lane Not Found",     cls: "bg-purple-50 text-purple-700 border-purple-200" },
-  DUPLICATE_CHARGE:   { label: "Duplicate Charge",   cls: "bg-orange-50 text-orange-700 border-orange-200" },
-};
-
-function ExCodeBadge({ code }: { code: string }) {
-  const meta = exCodeMeta[code] ?? { label: code, cls: "bg-slate-100 text-slate-600 border-slate-200" };
-  return (
-    <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${meta.cls}`}>
-      {meta.label}
-    </span>
-  );
-}
-
 const usdSigned = (n: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency", currency: "USD", signDisplay: "exceptZero",
@@ -380,14 +364,7 @@ function ExceptionsTab({ invoiceRef }: { invoiceRef: string }) {
               </div>
               <div>
                 <p className="text-xs text-slate-400 mb-0.5">Status</p>
-                <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
-                  ex.status === "OPEN"     ? "bg-red-50 text-red-700 border-red-200" :
-                  ex.status === "RESOLVED" ? "bg-green-50 text-green-700 border-green-200" :
-                  ex.status === "DISPUTED" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                  "bg-slate-100 text-slate-600 border-slate-200"
-                }`}>
-                  {ex.status.charAt(0) + ex.status.slice(1).toLowerCase()}
-                </span>
+                <ExceptionStatusBadge status={ex.status} />
               </div>
               {ex.resolvedBy && (
                 <div>
@@ -454,6 +431,7 @@ type AuditTab = "checks" | "exceptions" | "disputes";
 
 export default function InvoiceAuditPage() {
   const { invoiceId } = useParams<{ invoiceId: string }>();
+  const navigate = useNavigate();
   const [tab, setTab]           = useState<AuditTab>("checks");
   const [selectedRun, setSelectedRun] = useState<string | null>(null);
 
@@ -474,30 +452,20 @@ export default function InvoiceAuditPage() {
     <div className="min-h-full flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/invoices" className="hover:text-slate-600 transition-colors">Invoice Audit</Link>
-          <ChevronRight size={12} />
-          <Link to={`/invoices/${invoice.id}`} className="hover:text-slate-600 transition-colors">
-            {invoice.ref}
-          </Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-600">Audit</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          {invoice.ref}
+        </button>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/invoices/${invoice.id}`}
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors"
-            >
-              <ArrowLeft size={14} />
-            </Link>
-            <div>
-              <h1 className="text-slate-950">Audit · {invoice.ref}</h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {runs.length} audit run{runs.length !== 1 ? "s" : ""} · last on {fmtDate(runs[0].startedAt)}
-              </p>
-            </div>
+          <div>
+            <h1 className="text-slate-950">Audit · {invoice.ref}</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {runs.length} audit run{runs.length !== 1 ? "s" : ""} · last on {fmtDate(runs[0].startedAt)}
+            </p>
           </div>
           {/* Re-run is a secondary action — outline, not primary fill */}
           <Button variant="outline" size="sm" className="gap-1.5">

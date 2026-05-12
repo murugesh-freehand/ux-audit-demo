@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import {
   ChevronRight, ArrowLeft, RefreshCw, ChevronDown, ChevronUp,
-  AlertCircle, CheckCircle2, AlertTriangle, FileText, Clock,
+  AlertCircle, CheckCircle2, AlertTriangle, FileText, Clock, X,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
@@ -11,6 +11,7 @@ import {
   type Invoice, type InvoiceLineItem,
 } from "../../data/mockData";
 import { attachments, activityLog } from "../../data/exceptionsData";
+import { EVENT_LABEL_CFG } from "../shared/statusConfig";
 
 const usd = (v: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
@@ -23,19 +24,196 @@ const fmtTime = (ts: string) =>
 
 type Section = "audit" | "details" | "lines" | "documents";
 
-// ─── Audit Check Row ─────────────────────────────────────────────────────────
+// ─── Audit Check Drawer ──────────────────────────────────────────────────────
 
-function AuditCheckRow({ item, invoice }: { item: InvoiceLineItem; invoice: Invoice }) {
-  const [expanded, setExpanded] = useState(false);
-  const isIssue = item.status !== "PASS";
-
-  const carrier  = carriers.find(c => c.scac === invoice.vendorScac);
-  const contract = carrier
+function AuditCheckDrawer({
+  item, invoice, onClose,
+}: {
+  item: InvoiceLineItem; invoice: Invoice; onClose: () => void;
+}) {
+  const carrier   = carriers.find(c => c.scac === invoice.vendorScac);
+  const contract  = carrier
     ? contracts.find(c => c.carrierId === carrier.id && (c.status === "ACTIVE" || c.status === "PENDING"))
     : null;
   const chargeDef = contract
     ? chargeDefinitions.find(cd => cd.contractId === contract.id && cd.code === item.code)
     : null;
+
+  const isIssue = item.status !== "PASS";
+  const statusCls =
+    item.status === "FAIL"    ? "bg-red-50 text-red-700 border-red-200"   :
+    item.status === "WARNING" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                "bg-green-50 text-green-700 border-green-200";
+  const Icon =
+    item.status === "PASS"    ? CheckCircle2  :
+    item.status === "WARNING" ? AlertTriangle : AlertCircle;
+  const iconCls =
+    item.status === "PASS"    ? "text-green-500"  :
+    item.status === "WARNING" ? "text-amber-500"  : "text-red-500";
+
+  return (
+    <div className="w-[420px] shrink-0 border-l border-slate-200 flex flex-col bg-white overflow-hidden">
+      {/* Header */}
+      <div className="shrink-0 px-5 py-4 border-b border-slate-200">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
+              <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${statusCls}`}>
+                <Icon size={11} className={iconCls} />
+                {item.status}
+              </span>
+              <span className="font-mono text-xs font-semibold text-slate-600 bg-slate-100 rounded px-1.5 py-0.5">
+                {item.code}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-slate-900 leading-snug">{item.description}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{invoice.vendor} · {invoice.ref}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto">
+
+        {/* ① Amounts */}
+        <div className="px-5 py-4 border-b border-slate-100">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">① Amounts</p>
+          <div className="grid grid-cols-3 gap-4">
+            {([
+              ["Billed",     item.billed,     isIssue ? "text-red-600" : "text-slate-900"],
+              ["Contracted", item.contracted, "text-slate-900"],
+              ["Variance",   item.variance,   item.variance > 0 ? "text-red-600" : item.variance < 0 ? "text-green-600" : "text-slate-400"],
+            ] as [string, number, string][]).map(([label, value, cls]) => (
+              <div key={label}>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">{label}</p>
+                <p className={`text-base font-semibold ${cls}`}>{usd(value)}</p>
+              </div>
+            ))}
+          </div>
+          {isIssue && item.variancePct !== 0 && (
+            <p className="text-[11px] text-red-500 mt-2">
+              {item.variance > 0 ? "+" : ""}{item.variancePct.toFixed(1)}%{" "}
+              {item.variance > 0 ? "above" : "below"} contracted rate
+            </p>
+          )}
+        </div>
+
+        {/* ② Contract Source */}
+        <div className="px-5 py-4 border-b border-slate-100">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">② Contract Source</p>
+          {chargeDef && carrier && contract ? (
+            <>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
+                <div>
+                  <dt className="text-[10px] text-slate-400 mb-0.5">Carrier</dt>
+                  <dd className="text-sm font-medium text-slate-700">{carrier.name}</dd>
+                  <dd className="text-xs text-slate-400 font-mono mt-0.5">{carrier.scac}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] text-slate-400 mb-0.5">Contract</dt>
+                  <dd className="text-sm font-medium text-slate-700">v{contract.version}</dd>
+                  <dd className="text-xs text-slate-400 mt-0.5">{contract.effectiveDate} – {contract.expirationDate}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] text-slate-400 mb-0.5">Source</dt>
+                  <dd className="text-sm text-slate-700">{chargeDef.source}</dd>
+                </div>
+                {chargeDef.laneRates[0] && (
+                  <div>
+                    <dt className="text-[10px] text-slate-400 mb-0.5">Contracted Rate</dt>
+                    <dd className="text-sm font-medium text-slate-700">
+                      {chargeDef.laneRates[0].value != null
+                        ? `${chargeDef.laneRates[0].value} ${chargeDef.laneRates[0].uom}`
+                        : chargeDef.laneRates[0].uom}
+                      {chargeDef.laneRates[0].slab && chargeDef.laneRates[0].slab !== "All weights"
+                        ? ` (${chargeDef.laneRates[0].slab})`
+                        : ""}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <Link to={`/contracts/${carrier.id}`} className="text-xs font-medium text-primary hover:underline">
+                  View in contract ↗
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2.5">
+              <p className="text-xs text-amber-700">
+                No contracted rate found for{" "}
+                <span className="font-mono font-semibold">{item.code}</span>.
+                This charge may not be in scope for the matched contract.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ③ Calculation */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-3">③ Calculation</p>
+          {isIssue ? (
+            <div className="space-y-2">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+                <p className="text-[10px] font-semibold text-red-500 uppercase tracking-wide mb-1">Applied (Billed)</p>
+                <p className="text-lg font-bold text-red-600">{usd(item.billed)}</p>
+              </div>
+              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wide mb-1">Contracted (Expected)</p>
+                <p className="text-lg font-bold text-green-700">{usd(item.contracted)}</p>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+                <span className="text-xs font-medium text-slate-500">Variance</span>
+                <span className={`text-sm font-bold ${item.variance > 0 ? "text-red-600" : "text-green-600"}`}>
+                  {item.variance > 0 ? "+" : ""}{usd(item.variance)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3">
+              <p className="text-xs font-medium text-green-700">
+                ✓ Billed amount matches contracted rate — no variance
+              </p>
+              <p className="text-sm font-bold text-green-700 mt-1">{usd(item.billed)}</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Footer actions */}
+      {isIssue && (
+        <div className="shrink-0 border-t border-slate-200 px-5 py-3 flex items-center gap-2 bg-white">
+          <Button variant="ghost" size="sm" className="h-8 text-slate-600 hover:text-slate-900">
+            Accept
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 ml-auto border-red-200 text-red-600 hover:bg-red-50"
+          >
+            Raise Dispute
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Audit Check Row ─────────────────────────────────────────────────────────
+
+function AuditCheckRow({
+  item, invoice, onOpen,
+}: {
+  item: InvoiceLineItem; invoice: Invoice; onOpen: (item: InvoiceLineItem) => void;
+}) {
+  const isIssue = item.status !== "PASS";
 
   const borderCls =
     item.status === "FAIL"    ? "border-l-red-400"   :
@@ -43,122 +221,61 @@ function AuditCheckRow({ item, invoice }: { item: InvoiceLineItem; invoice: Invo
                                 "border-l-green-400";
   const Icon =
     item.status === "PASS"    ? CheckCircle2  :
-    item.status === "WARNING" ? AlertTriangle :
-                                AlertCircle;
+    item.status === "WARNING" ? AlertTriangle : AlertCircle;
   const iconCls =
     item.status === "PASS"    ? "text-green-500"  :
-    item.status === "WARNING" ? "text-amber-500"  :
-                                "text-red-500";
+    item.status === "WARNING" ? "text-amber-500"  : "text-red-500";
 
   return (
-    <div className={`border-l-2 ${borderCls}`}>
-      <div className="px-5 py-3.5 flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <Icon size={15} className={`${iconCls} mt-0.5 shrink-0`} />
-          <div className="flex-1 min-w-0">
-            {/* Charge id + name */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-xs font-semibold text-slate-950">{item.code}</span>
-              <span className="text-sm text-slate-700">{item.description}</span>
-            </div>
-
-            {/* Billed vs contracted */}
-            <div className="mt-0.5 flex items-center gap-1 flex-wrap text-xs">
-              {isIssue ? (
-                <>
-                  <span className="text-slate-500">Billed <span className="font-medium text-slate-800">{usd(item.billed)}</span></span>
-                  <span className="text-slate-400">vs contracted</span>
-                  <span className="font-medium text-slate-800">{usd(item.contracted)}</span>
-                  <span className={`font-medium ${item.variance > 0 ? "text-red-600" : "text-green-600"}`}>
-                    · {item.variance > 0 ? "+" : ""}{usd(item.variance)}
-                  </span>
-                </>
-              ) : (
-                <span className="text-slate-400">
-                  Billed {usd(item.billed)} = Contracted {usd(item.contracted)} · No variance
+    <button
+      onClick={() => onOpen(item)}
+      className={`w-full text-left border-l-2 ${borderCls} px-5 py-3.5 flex items-start justify-between gap-4 hover:bg-slate-50/60 transition-colors`}
+    >
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        <Icon size={15} className={`${iconCls} mt-0.5 shrink-0`} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-xs font-semibold text-slate-950">{item.code}</span>
+            <span className="text-sm text-slate-700">{item.description}</span>
+          </div>
+          <div className="mt-0.5 flex items-center gap-1 flex-wrap text-xs">
+            {isIssue ? (
+              <>
+                <span className="text-slate-500">
+                  Billed <span className="font-medium text-slate-800">{usd(item.billed)}</span>
                 </span>
-              )}
-            </div>
-
-            {/* Where is this contracted? */}
-            <button
-              onClick={() => setExpanded(e => !e)}
-              className="mt-1.5 inline-flex items-center gap-0.5 text-xs text-slate-400 hover:text-primary transition-colors"
-            >
-              Where is this contracted?
-              {expanded
-                ? <ChevronUp size={11} className="ml-0.5" />
-                : <ChevronRight size={11} className="ml-0.5" />}
-            </button>
-
-            {expanded && (
-              <div className="mt-2 rounded-md bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs">
-                {chargeDef && carrier && contract ? (
-                  <>
-                    <dl className="grid grid-cols-[76px_1fr] gap-x-3 gap-y-1.5">
-                      <dt className="text-slate-400">Carrier</dt>
-                      <dd className="text-slate-700">{carrier.name} ({carrier.scac})</dd>
-                      <dt className="text-slate-400">Contract</dt>
-                      <dd className="text-slate-700">v{contract.version} · {contract.effectiveDate} – {contract.expirationDate}</dd>
-                      <dt className="text-slate-400">Source</dt>
-                      <dd className="text-slate-700">{chargeDef.source}</dd>
-                      {chargeDef.laneRates[0] && (
-                        <>
-                          <dt className="text-slate-400">Rate</dt>
-                          <dd className="text-slate-700">
-                            {chargeDef.laneRates[0].value != null
-                              ? `${chargeDef.laneRates[0].value} ${chargeDef.laneRates[0].uom}`
-                              : chargeDef.laneRates[0].uom}
-                            {chargeDef.laneRates[0].slab && chargeDef.laneRates[0].slab !== "All weights"
-                              ? ` (${chargeDef.laneRates[0].slab})`
-                              : ""}
-                          </dd>
-                        </>
-                      )}
-                    </dl>
-                    <div className="mt-2.5 pt-2 border-t border-slate-200">
-                      <Link
-                        to={`/contracts/${carrier.id}`}
-                        className="text-primary hover:underline font-medium"
-                      >
-                        View in contract ↗
-                      </Link>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-slate-400 italic">
-                    No contracted rate found for charge code{" "}
-                    <span className="font-mono font-semibold not-italic text-slate-600">{item.code}</span>.
-                  </p>
-                )}
-              </div>
+                <span className="text-slate-400">vs contracted</span>
+                <span className="font-medium text-slate-800">{usd(item.contracted)}</span>
+                <span className={`font-medium ${item.variance > 0 ? "text-red-600" : "text-green-600"}`}>
+                  · {item.variance > 0 ? "+" : ""}{usd(item.variance)}
+                </span>
+              </>
+            ) : (
+              <span className="text-slate-400">
+                {usd(item.billed)} · No variance
+              </span>
             )}
           </div>
+          <span className="mt-1.5 inline-flex items-center gap-0.5 text-[11px] text-slate-400">
+            View calculation & source <ChevronRight size={10} className="ml-0.5" />
+          </span>
         </div>
-
-        {/* Actions — only for non-PASS rows */}
-        {isIssue && (
-          <div className="flex items-center gap-2 shrink-0">
-            <Button variant="ghost" size="sm" className="h-7 px-3 text-xs text-slate-500 hover:text-slate-800">
-              Accept
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-3 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-            >
-              Dispute
-            </Button>
-          </div>
-        )}
       </div>
-    </div>
+
+      {isIssue && (
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-medium bg-slate-50 border-slate-200 text-slate-500 whitespace-nowrap">
+            {item.variancePct > 0 ? "+" : ""}{item.variancePct.toFixed(1)}%
+          </span>
+        </div>
+      )}
+    </button>
   );
 }
 
 // ─── Audit Checks Section ────────────────────────────────────────────────────
 
-function AuditSection({ invoice }: { invoice: Invoice }) {
+function AuditSection({ invoice, onOpenDrawer }: { invoice: Invoice; onOpenDrawer: (item: InvoiceLineItem) => void }) {
   const lineItems  = invoiceLineItems.filter(li => li.invoiceId === invoice.id);
   const issueCount = lineItems.filter(li => li.status !== "PASS").length;
   const passCount  = lineItems.filter(li => li.status === "PASS").length;
@@ -180,9 +297,17 @@ function AuditSection({ invoice }: { invoice: Invoice }) {
               : <span className="text-xs text-red-600 font-medium">{issueCount} failed · {passCount} passed</span>
           )}
         </div>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-slate-500 h-7 px-2.5 text-xs">
-          <RefreshCw size={12} /> Re-run
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/invoices/${invoice.id}/audit`}
+            className="text-xs font-medium text-primary hover:underline flex items-center gap-0.5"
+          >
+            View full audit <ChevronRight size={11} />
+          </Link>
+          <Button variant="ghost" size="sm" className="gap-1.5 text-slate-500 h-7 px-2.5 text-xs">
+            <RefreshCw size={12} /> Re-run
+          </Button>
+        </div>
       </div>
 
       {/* List or fallback */}
@@ -204,7 +329,7 @@ function AuditSection({ invoice }: { invoice: Invoice }) {
       ) : (
         <div className="divide-y divide-slate-100">
           {sorted.map(item => (
-            <AuditCheckRow key={item.id} item={item} invoice={invoice} />
+            <AuditCheckRow key={item.id} item={item} invoice={invoice} onOpen={onOpenDrawer} />
           ))}
         </div>
       )}
@@ -366,12 +491,6 @@ function LineItemsSection({ invoiceId }: { invoiceId: string }) {
 
 // ─── Documents (Attachments + Activity + Raw Data — all collapsed) ─────────────
 
-const eventLabels: Record<string, { label: string; cls: string }> = {
-  AUDIT_COMPLETED:     { label: "Audit Completed",     cls: "bg-green-50 text-green-700 border-green-200" },
-  REPROCESS_REQUESTED: { label: "Reprocess Requested", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  EXCEPTION_RESOLVED:  { label: "Exception Resolved",  cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  INVOICE_RECEIVED:    { label: "Invoice Received",     cls: "bg-slate-50 text-slate-600 border-slate-200" },
-};
 
 function DocumentsSection({ invoice }: { invoice: Invoice }) {
   const [open, setOpen] = useState(false);
@@ -433,10 +552,10 @@ function DocumentsSection({ invoice }: { invoice: Invoice }) {
                   <p className="text-xs text-slate-400">No activity recorded</p>
                 ) : (
                   invoiceActivity.map((entry) => {
-                    const ev = eventLabels[entry.eventType] ?? { label: entry.eventType, cls: "bg-slate-50 text-slate-600 border-slate-200" };
+                    const ev = EVENT_LABEL_CFG[entry.eventType] ?? { label: entry.eventType, badgeCls: "bg-slate-50 text-slate-600 border-slate-200" };
                     return (
                       <div key={entry.id} className="flex items-start gap-3">
-                        <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap mt-0.5 ${ev.cls}`}>
+                        <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap mt-0.5 ${ev.badgeCls}`}>
                           {ev.label}
                         </span>
                         <div>
@@ -495,7 +614,9 @@ function DocumentsSection({ invoice }: { invoice: Invoice }) {
 
 export default function InvoiceDetailPage() {
   const { invoiceId } = useParams<{ invoiceId: string }>();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<Section>("audit");
+  const [drawerItem, setDrawerItem] = useState<InvoiceLineItem | null>(null);
 
   const invoice = invoices.find((i) => i.id === invoiceId);
   if (!invoice) {
@@ -510,12 +631,14 @@ export default function InvoiceDetailPage() {
   return (
     <div className="min-h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/invoices" className="hover:text-slate-600 transition-colors">Invoice Audit</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-600">{invoice.ref}</span>
-        </nav>
+      <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          Invoice Audit
+        </button>
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-slate-950">{invoice.ref}</h1>
@@ -528,20 +651,26 @@ export default function InvoiceDetailPage() {
               <span className="text-xs text-slate-400">{invoice.vendor}</span>
             </div>
           </div>
-          <Link to="/invoices" className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors mt-1">
-            <ArrowLeft size={14} />
-            Back
-          </Link>
         </div>
       </div>
 
       <SectionNav active={activeSection} onNav={scrollTo} />
 
-      <div className="px-6 py-5 space-y-4 flex-1">
-        <AuditSection invoice={invoice} />
-        <DetailsSection invoice={invoice} />
-        <LineItemsSection invoiceId={invoice.id} />
-        <DocumentsSection invoice={invoice} />
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          <AuditSection invoice={invoice} onOpenDrawer={setDrawerItem} />
+          <DetailsSection invoice={invoice} />
+          <LineItemsSection invoiceId={invoice.id} />
+          <DocumentsSection invoice={invoice} />
+        </div>
+
+        {drawerItem && (
+          <AuditCheckDrawer
+            item={drawerItem}
+            invoice={invoice}
+            onClose={() => setDrawerItem(null)}
+          />
+        )}
       </div>
     </div>
   );

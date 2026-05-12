@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
-import { ChevronRight, Plus, RefreshCw, Filter, X } from "lucide-react";
+import { Link, useParams, useNavigate } from "react-router";
+import { ArrowLeft, Plus, RefreshCw, Filter, X } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, AreaChart, Area,
@@ -97,6 +97,7 @@ function ChartTooltip({ active, payload, label }: any) {
 
 export default function SpendDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const dashboard = spendDashboards.find((d) => d.slug === slug);
 
   const [period, setPeriod] = useState("all");
@@ -117,11 +118,13 @@ export default function SpendDashboardPage() {
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/spend" className="hover:text-slate-600 transition-colors">Spend Analysis</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-600">{dashboard.name}</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          Spend Analysis
+        </button>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-slate-950">{dashboard.name}</h1>

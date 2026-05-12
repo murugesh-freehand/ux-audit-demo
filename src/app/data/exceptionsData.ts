@@ -30,6 +30,19 @@ export interface RateTrace {
   mismatchReason: string;
 }
 
+export const CHARGE_NAMES: Record<string, string> = {
+  DSC:       "Discount",
+  ENS:       "Energy Surcharge",
+  "400":     "Extended Delivery",
+  FSC:       "Fuel Surcharge",
+  BASE:      "Base Rate",
+  WT:        "Weight",
+  OHC:       "Origin Handling",
+  INSURANCE: "Cargo Insurance",
+};
+
+export const chargeName = (code: string): string => CHARGE_NAMES[code] ?? code;
+
 export interface AuditException {
   id: string;
   invoiceRef: string;

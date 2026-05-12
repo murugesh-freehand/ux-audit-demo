@@ -11,6 +11,7 @@ import {
 import { cn } from "../ui/utils";
 import { invoices, contracts } from "../../data/mockData";
 import { exceptions } from "../../data/exceptionsData";
+import { ExceptionCodeBadge, StatusBadge } from "../shared/StatusBadge";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -103,37 +104,6 @@ function StepIcon({ state }: { state: StepState }) {
   );
 }
 
-function ExceptionCodeBadge({ code }: { code: string }) {
-  const labels: Record<string, { label: string; cls: string }> = {
-    RATE_UNAVAILABLE:   { label: "Rate Unavailable", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    CROSS_DOC_MISMATCH: { label: "Doc Mismatch",     cls: "bg-blue-50 text-blue-700 border-blue-200" },
-    BUSINESS_RULE:      { label: "Business Rule",    cls: "bg-purple-50 text-purple-700 border-purple-200" },
-    LANE_NOT_FOUND:     { label: "Lane Not Found",   cls: "bg-red-50 text-red-700 border-red-200" },
-    DUPLICATE_CHARGE:   { label: "Duplicate Charge", cls: "bg-orange-50 text-orange-700 border-orange-200" },
-  };
-  const { label, cls } = labels[code] ?? { label: code, cls: "bg-slate-50 text-slate-600 border-slate-200" };
-  return (
-    <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap", cls)}>
-      {label}
-    </span>
-  );
-}
-
-function InvoiceStatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    HELD:       "bg-amber-50 text-amber-700 border-amber-200",
-    APPROVED:   "bg-emerald-50 text-emerald-700 border-emerald-200",
-    REJECTED:   "bg-red-50 text-red-700 border-red-200",
-    INCOMPLETE: "bg-amber-50 text-amber-700 border-amber-200",
-    COMPLETED:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-    PENDING:    "bg-slate-50 text-slate-500 border-slate-200",
-  };
-  return (
-    <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium", map[status] ?? "bg-slate-100 text-slate-600 border-slate-200")}>
-      {status}
-    </span>
-  );
-}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -335,7 +305,7 @@ export default function HomePage() {
                       <p className="text-[11px] text-slate-400 mt-0.5">{inv.mode} · {inv.service}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <InvoiceStatusBadge status={inv.status} />
+                      <StatusBadge status={inv.status} />
                       <span className="text-[11px] text-slate-400 w-10 text-right">{formatDate(inv.receivedDate)}</span>
                     </div>
                   </Link>

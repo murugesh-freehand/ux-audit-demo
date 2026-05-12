@@ -6,10 +6,12 @@ import {
 import { Button } from "../ui/button";
 import {
   exceptions,
+  chargeName,
   type AuditException,
   type ExceptionCode,
   type ExceptionStatus,
 } from "../../data/exceptionsData";
+import { EXCEPTION_CODE_META, EXCEPTION_STATUS_CFG } from "../shared/statusConfig";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -26,28 +28,6 @@ function daysAgo(d: string) {
   return Math.floor((DEMO_TODAY.getTime() - new Date(d).getTime()) / 86_400_000);
 }
 
-const CODE_META: Record<ExceptionCode, { label: string; badgeCls: string }> = {
-  RATE_UNAVAILABLE:   { label: "Rate Unavailable",   badgeCls: "bg-red-50 text-red-700 border-red-200"          },
-  CROSS_DOC_MISMATCH: { label: "Cross-Doc Mismatch", badgeCls: "bg-amber-50 text-amber-700 border-amber-200"    },
-  BUSINESS_RULE:      { label: "Business Rule",      badgeCls: "bg-blue-50 text-blue-700 border-blue-200"       },
-  LANE_NOT_FOUND:     { label: "Lane Not Found",     badgeCls: "bg-purple-50 text-purple-700 border-purple-200" },
-  DUPLICATE_CHARGE:   { label: "Duplicate Charge",   badgeCls: "bg-orange-50 text-orange-700 border-orange-200" },
-};
-
-const STATUS_CLS: Record<ExceptionStatus, string> = {
-  OPEN:     "bg-red-50 text-red-700 border-red-200",
-  RESOLVED: "bg-green-50 text-green-700 border-green-200",
-  ACCEPTED: "bg-slate-100 text-slate-600 border-slate-200",
-  DISPUTED: "bg-amber-50 text-amber-700 border-amber-200",
-};
-
-const STATUS_DOT: Record<ExceptionStatus, string> = {
-  OPEN:     "bg-red-600",
-  RESOLVED: "bg-green-600",
-  ACCEPTED: "bg-slate-400",
-  DISPUTED: "bg-amber-600",
-};
-
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type ColumnId =
@@ -59,7 +39,7 @@ const COLUMN_LABELS: Record<ColumnId, string> = {
   invoice:          "Invoice",
   vendor:           "Vendor",
   type:             "Type",
-  chargeCode:       "Charge Code",
+  chargeCode:       "Charge",
   description:      "Description",
   status:           "Status",
   variance:         "Variance",
@@ -103,7 +83,7 @@ const INITIAL_BUCKETS: AgentBucket[] = [
     name: "All exceptions",
     description: "",
     filter: () => true,
-    columns: ["invoice", "vendor", "type", "description", "status", "variance", "date"],
+    columns: ["invoice", "vendor", "chargeCode", "type", "description", "status", "variance", "date"],
     dotCls: "bg-slate-400",
     isDefault: true,
   },
@@ -121,7 +101,7 @@ const INITIAL_BUCKETS: AgentBucket[] = [
     name: "Aging unresolved flags",
     description: "Exceptions on shipments older than 45 days that remain open. Most carriers close their dispute window at 90 days — items in this bucket are at increasing risk of becoming uncollectable.",
     filter: (ex) => daysAgo(ex.shipmentDate) > 45 && ex.status === "OPEN",
-    columns: ["invoice", "vendor", "shipmentDate", "daysInQueue", "billedAmount", "status", "variance"],
+    columns: ["invoice", "vendor", "chargeCode", "shipmentDate", "daysInQueue", "billedAmount", "status", "variance"],
     dotCls: "bg-red-500",
     provenance: "agent",
   },
@@ -130,7 +110,7 @@ const INITIAL_BUCKETS: AgentBucket[] = [
     name: "Rate card mismatches",
     description: "Charges where the billed rate doesn't align with any active contract lane. Carrier may be using an expired rate card, or the lane isn't covered in the current agreement.",
     filter: (ex) => ["RATE_UNAVAILABLE", "LANE_NOT_FOUND"].includes(ex.code),
-    columns: ["invoice", "vendor", "scac", "type", "billedAmount", "contractedAmount", "status", "variance"],
+    columns: ["invoice", "vendor", "scac", "chargeCode", "type", "billedAmount", "contractedAmount", "status", "variance"],
     dotCls: "bg-violet-500",
     provenance: "agent",
   },
@@ -165,7 +145,7 @@ function createBucketFromNL(query: string): AgentBucket {
     name: "Averitt exceptions",
     description: `All exceptions from Averitt Express. Grouped for carrier-level reconciliation.`,
     filter: (ex) => ex.vendor === "Averitt Express",
-    columns: ["invoice", "scac", "type", "billedAmount", "contractedAmount", "status", "variance"],
+    columns: ["invoice", "scac", "chargeCode", "type", "billedAmount", "contractedAmount", "status", "variance"],
   };
 
   if (q.includes("ceva")) return {
@@ -181,7 +161,7 @@ function createBucketFromNL(query: string): AgentBucket {
     name: "High variance outliers",
     description: `Exceptions where billed amount exceeds contracted rate by more than $100. Highest-value recovery opportunities in this batch.`,
     filter: (ex) => (ex.variance ?? 0) > 100,
-    columns: ["invoice", "vendor", "type", "billedAmount", "contractedAmount", "status", "variance"],
+    columns: ["invoice", "vendor", "chargeCode", "type", "billedAmount", "contractedAmount", "status", "variance"],
   };
 
   if (q.includes("business rule") || q.includes("rule")) return {
@@ -189,7 +169,7 @@ function createBucketFromNL(query: string): AgentBucket {
     name: "Business rule violations",
     description: `Exceptions flagged for business rule violations. These typically require manual policy review before accepting or disputing.`,
     filter: (ex) => ex.code === "BUSINESS_RULE",
-    columns: ["invoice", "vendor", "type", "description", "status", "variance"],
+    columns: ["invoice", "vendor", "chargeCode", "type", "description", "status", "variance"],
   };
 
   if (q.includes("cross") || q.includes("mismatch") || q.includes("doc")) return {
@@ -197,7 +177,7 @@ function createBucketFromNL(query: string): AgentBucket {
     name: "Cross-doc mismatches",
     description: `Charges that don't reconcile across invoice, BOL, and rate card documents. Likely data entry or EDI mapping issues.`,
     filter: (ex) => ex.code === "CROSS_DOC_MISMATCH",
-    columns: ["invoice", "vendor", "scac", "billedAmount", "contractedAmount", "status", "variance"],
+    columns: ["invoice", "vendor", "scac", "chargeCode", "billedAmount", "contractedAmount", "status", "variance"],
   };
 
   return {
@@ -205,7 +185,7 @@ function createBucketFromNL(query: string): AgentBucket {
     name: query.length > 32 ? query.slice(0, 32) + "…" : query,
     description: `Custom pattern from your query: "${query}". Showing open exceptions with positive variance as a starting point.`,
     filter: (ex) => ex.status === "OPEN" && (ex.variance ?? 0) > 0,
-    columns: ["invoice", "vendor", "type", "billedAmount", "contractedAmount", "status", "variance"],
+    columns: ["invoice", "vendor", "chargeCode", "type", "billedAmount", "contractedAmount", "status", "variance"],
   };
 }
 
@@ -213,8 +193,8 @@ function createBucketFromNL(query: string): AgentBucket {
 
 function StatusPill({ status }: { status: ExceptionStatus }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-medium ${STATUS_CLS[status]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[status]}`} />
+    <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-xs font-medium ${EXCEPTION_STATUS_CFG[status].badgeCls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${EXCEPTION_STATUS_CFG[status].dotCls}`} />
       {status.charAt(0) + status.slice(1).toLowerCase()}
     </span>
   );
@@ -283,11 +263,11 @@ function ExceptionTable({ rows, columns, selectedIds, onToggle, onToggleAll, ana
       case "vendor":
         return <td key={col} className="px-3 py-3 text-sm text-slate-600 whitespace-nowrap">{ex.vendor}</td>;
       case "type": {
-        const m = CODE_META[ex.code];
+        const m = EXCEPTION_CODE_META[ex.code];
         return <td key={col} className="px-3 py-3"><span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${m.badgeCls}`}>{m.label}</span></td>;
       }
       case "chargeCode":
-        return <td key={col} className="px-3 py-3"><span className="font-mono text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{ex.chargeCode}</span></td>;
+        return <td key={col} className="px-3 py-3 text-sm text-slate-700 whitespace-nowrap">{chargeName(ex.chargeCode)}</td>;
       case "scac":
         return <td key={col} className="px-3 py-3"><span className="font-mono text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{ex.vendorScac}</span></td>;
       case "description":
@@ -386,7 +366,7 @@ function ExceptionTable({ rows, columns, selectedIds, onToggle, onToggleAll, ana
 
 function RootCauseDrawer({ ex, onClose }: { ex: AuditException; onClose: () => void }) {
   const trace  = ex.rateTrace ?? null;
-  const meta   = CODE_META[ex.code];
+  const meta   = EXCEPTION_CODE_META[ex.code];
   const days   = daysAgo(ex.shipmentDate);
   const overPct =
     ex.variance !== null && ex.contractedAmount !== null && ex.contractedAmount > 0
@@ -573,20 +553,20 @@ function BucketCard({ bucket, count, totalVariance, isActive, onSelect, onDismis
         <span className={`w-2 h-2 rounded-full shrink-0 mt-[5px] ${bucket.dotCls}`} />
         <div className="flex-1 min-w-0 pr-4">
           <div className="flex items-center justify-between gap-1">
-            <p className={`text-xs font-medium leading-snug truncate ${isActive ? "text-primary" : "text-slate-800"}`}>
+            <p className={`text-sm font-medium leading-snug truncate ${isActive ? "text-primary" : "text-slate-800"}`}>
               {bucket.name}
             </p>
-            <span className={`shrink-0 text-xs font-medium tabular-nums ${isActive ? "text-primary" : "text-slate-400"}`}>
+            <span className={`shrink-0 text-sm font-medium tabular-nums ${isActive ? "text-primary" : "text-slate-400"}`}>
               {count}
             </span>
           </div>
           {bucket.description && (
-            <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed line-clamp-2">
+            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed line-clamp-2">
               {bucket.description}
             </p>
           )}
           {count > 0 && totalVariance > 0 && (
-            <p className="text-[10px] mt-1 font-medium text-red-500">
+            <p className="text-[11px] mt-1 font-medium text-red-500">
               {usd(totalVariance)} variance
             </p>
           )}
@@ -671,7 +651,7 @@ function AgentPanel({ buckets, activeBucketId, onSelect, onDismiss, onDiscover }
           <span className="text-sm font-medium text-slate-800">Agent Findings</span>
           <span className="ml-auto text-[11px] text-slate-400 font-medium tabular-nums">{agentCount} buckets</span>
         </div>
-        <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
           Patterns surfaced from this invoice batch
         </p>
       </div>

@@ -1,14 +1,16 @@
 import React from "react";
 import { cn } from "../ui/utils";
+import {
+  EXCEPTION_CODE_META,
+  EXCEPTION_STATUS_CFG,
+  PROCESSING_STATUS_CFG,
+  type ProcessingStatus,
+} from "./statusConfig";
+import type { ExceptionCode, ExceptionStatus } from "../../data/exceptionsData";
 
-type StatusVariant =
-  | "success"
-  | "warning"
-  | "danger"
-  | "neutral"
-  | "info"
-  | "pending"
-  | "mode";
+// ─── Generic semantic badge ───────────────────────────────────────────────────
+
+type StatusVariant = "success" | "warning" | "danger" | "neutral" | "info" | "pending" | "mode";
 
 const variantStyles: Record<StatusVariant, string> = {
   success: "bg-green-50 text-green-700 border-green-200",
@@ -38,36 +40,54 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, variant, className }: StatusBadgeProps) {
   const resolvedVariant = variant ?? resolveVariant(status);
-  // Humanize: "APPROVED" → "Approved", "CROSS_DOC_MISMATCH" → kept as-is by callers using specific badges
   const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace(/_/g, " ");
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap",
-        variantStyles[resolvedVariant],
-        className
-      )}
-    >
+    <span className={cn("inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap", variantStyles[resolvedVariant], className)}>
       {label}
     </span>
   );
 }
 
-interface ModeBadgeProps {
-  mode: string;
-  className?: string;
+// ─── Mode badge ───────────────────────────────────────────────────────────────
+
+export function ModeBadge({ mode, className }: { mode: string; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap", variantStyles.mode, className)}>
+      {mode}
+    </span>
+  );
 }
 
-export function ModeBadge({ mode, className }: ModeBadgeProps) {
+// ─── Exception code badge ─────────────────────────────────────────────────────
+
+export function ExceptionCodeBadge({ code, className }: { code: ExceptionCode | string; className?: string }) {
+  const meta = EXCEPTION_CODE_META[code as ExceptionCode] ?? { label: code, badgeCls: "bg-slate-50 text-slate-600 border-slate-200" };
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap",
-        variantStyles.mode,
-        className
-      )}
-    >
-      {mode}
+    <span className={cn("inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap", meta.badgeCls, className)}>
+      {meta.label}
+    </span>
+  );
+}
+
+// ─── Exception status badge ───────────────────────────────────────────────────
+
+export function ExceptionStatusBadge({ status, className }: { status: ExceptionStatus | string; className?: string }) {
+  const cfg = EXCEPTION_STATUS_CFG[status as ExceptionStatus] ?? { badgeCls: "bg-slate-100 text-slate-600 border-slate-200" };
+  const label = status.charAt(0) + status.slice(1).toLowerCase();
+  return (
+    <span className={cn("inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap", cfg.badgeCls, className)}>
+      {label}
+    </span>
+  );
+}
+
+// ─── Processing status badge ──────────────────────────────────────────────────
+
+export function ProcessingStatusBadge({ status, className }: { status: ProcessingStatus | string; className?: string }) {
+  const cfg = PROCESSING_STATUS_CFG[status as ProcessingStatus] ?? { label: status, badgeCls: "bg-slate-100 text-slate-600 border-slate-200" };
+  return (
+    <span className={cn("inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap", cfg.badgeCls, className)}>
+      {cfg.label}
     </span>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import { ChevronRight, FileText, Plus, Edit2, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { StatusBadge, ModeBadge } from "../shared/StatusBadge";
@@ -223,6 +223,7 @@ function LanesTab({ contractId }: { contractId: string }) {
 
 export default function ContractDetailPage() {
   const { carrierId, contractId } = useParams<{ carrierId: string; contractId: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const carrier = carriers.find((c) => c.id === carrierId);
@@ -242,14 +243,13 @@ export default function ContractDetailPage() {
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/contracts" className="hover:text-slate-600 transition-colors">Contracts</Link>
-          <ChevronRight size={12} />
-          <Link to={`/contracts/${carrierId}`} className="hover:text-slate-600 transition-colors">{carrier.name}</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-600">Version {contract.version}</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          {carrier.name}
+        </button>
 
         <div className="flex items-start justify-between">
           <div>
@@ -265,13 +265,6 @@ export default function ContractDetailPage() {
               {contract.chargeCount} charges
             </p>
           </div>
-          <Link
-            to={`/contracts/${carrierId}`}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors mt-1"
-          >
-            <ArrowLeft size={14} />
-            Back
-          </Link>
         </div>
 
         {/* Tabs */}

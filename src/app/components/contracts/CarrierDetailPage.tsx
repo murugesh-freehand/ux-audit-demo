@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import {
   ChevronRight,
   Search,
@@ -10,6 +10,7 @@ import {
   X,
   LayoutList,
   Table2,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -556,6 +557,7 @@ type Tab = "overview" | "details" | "versions";
 
 export default function CarrierDetailPage() {
   const { carrierId } = useParams<{ carrierId: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const carrier = carriers.find((c) => c.id === carrierId);
@@ -575,11 +577,13 @@ export default function CarrierDetailPage() {
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-          <Link to="/contracts" className="hover:text-slate-600 transition-colors">Contracts</Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-700 font-medium">{carrier.name}</span>
-        </nav>
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors mb-3"
+        >
+          <ArrowLeft size={12} />
+          Contracts
+        </button>
 
         <div className="flex items-start justify-between">
           <div>
