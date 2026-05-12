@@ -8,6 +8,7 @@ import InvoiceListPage from "./components/invoices/InvoiceListPage";
 import InvoiceDetailPage from "./components/invoices/InvoiceDetailPage";
 import InvoiceAuditPage from "./components/invoices/InvoiceAuditPage";
 import ExceptionsPage from "./components/exceptions/ExceptionsPage";
+import DisputesPage from "./components/disputes/DisputesPage";
 import SpendPage from "./components/spend/SpendPage";
 import SpendDashboardPage from "./components/spend/SpendDashboardPage";
 import AgentsPage from "./components/agents/AgentsPage";
@@ -43,6 +44,9 @@ export const router = createBrowserRouter([
 
       // Exceptions
       { path: "exceptions",                        Component: ExceptionsPage },
+
+      // Disputes
+      { path: "disputes",                          Component: DisputesPage },
 
       // Spend Analysis
       { path: "spend",                             Component: SpendPage },

@@ -5,6 +5,7 @@ import {
   FileText,
   Receipt,
   AlertTriangle,
+  MessageSquare,
   TrendingDown,
   Bot,
   BarChart2,
@@ -48,6 +49,15 @@ const flowItems = [
     path:     "/exceptions",
     circleBg: "bg-red-100",
     iconCls:  "text-red-600",
+    badge:    undefined,
+  },
+  {
+    label:    "Disputes",
+    subtitle: "Vendor conversations",
+    icon:     MessageSquare,
+    path:     "/disputes",
+    circleBg: "bg-violet-100",
+    iconCls:  "text-violet-600",
     badge:    undefined,
   },
   {
