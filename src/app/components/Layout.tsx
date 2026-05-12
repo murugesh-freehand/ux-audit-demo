@@ -52,6 +52,15 @@ const flowItems = [
     badge:    undefined,
   },
   {
+    label:    "Exceptions (Agent)",
+    subtitle: "Dynamic agent-generated buckets",
+    icon:     Bot,
+    path:     "/exceptions-agent",
+    circleBg: "bg-orange-100",
+    iconCls:  "text-primary",
+    badge:    undefined,
+  },
+  {
     label:    "Disputes",
     subtitle: "Vendor conversations",
     icon:     MessageSquare,
